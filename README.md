@@ -25,7 +25,7 @@
 Projeyi kendi bilgisayarınızda çalıştırmak veya geliştirmeye katkıda bulunmak için aşağıdaki adımları izleyin.
 ### Gereksinimler
 - [Node.js](https://nodejs.org/) (Sürüm 18+ önerilir)
-- Windows 10 veya Windows 11 İşletim Sistemi. (Yönetici izinleri gerektirir)
+- Windows 11 İşletim Sistemi.
 ### 1. Klonlama ve Yükleme
 ```bash
 # Repoyu bilgisayarınıza indirin
@@ -55,7 +55,3 @@ Bu işlem tamamlandığında proje klasörünün içindeki release klasöründe 
 
 ## 🤝 Katkıda Bulunma
 Bu proje topluluğa açıktır! Herhangi bir eksiği tamamlayabilir, hata bildirebilir (Issue) veya yeni bir özellik ekleyip çekme isteği (Pull Request) gönderebilirsiniz. Yeni ince ayarlar (tweaks) eklemek için her zaman açığız.
-
-
-
-
