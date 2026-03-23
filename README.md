@@ -5,7 +5,7 @@ Projeyi kaynak kodundan derlemek veya geliştirme yapmak için bilgisayarınızd
 ### 1. Projeyi Klonlayın
 ```bash
 git clone https://github.com/obteknoloji/u-toolbox/u-toolbox.git
-cd wundows-toolbox/ToolboxApp
+cd u-toolbox/ToolboxApp
 ```
 
 ### 2. Projenin ihtiyaç duyduğu NPM paketlerini indirmek için şu komutu çalıştırın:
