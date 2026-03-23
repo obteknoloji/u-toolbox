@@ -8,17 +8,17 @@ git clone https://github.com/obteknoloji/u-toolbox/u-toolbox.git
 cd wundows-toolbox/ToolboxApp
 ```
 
-Projenin ihtiyaç duyduğu NPM paketlerini indirmek için şu komutu çalıştırın:
+### 2. Projenin ihtiyaç duyduğu NPM paketlerini indirmek için şu komutu çalıştırın:
 ```bash
 npm install
 ```
 
-Geliştirici Modunda (Dev Mode) Çalıştırın
+### 3. Geliştirici Modunda (Dev Mode) Çalıştırın
 ```
 npm run electron:dev
 ```
 
-📦 Uygulamayı Derleme (Build & Paketleme)
+### 4. 📦 Uygulamayı Derleme (Build & Paketleme)
 ```
 npm run electron:build
 ```
