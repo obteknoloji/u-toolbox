@@ -18,6 +18,7 @@
   - **Güvenli Dosya Silici (Shredder):** Dosyalarınızı kurtarılamayacak şekilde diskten fiziksel olarak yok edin.
   - **URL Kontrolü:** Kısaltılmış şüpheli linklerin (bit.ly vb.) arkasındaki gerçek hedefleri tıklamadan görün.
 - ⏱️ **Kapanış Planlayıcı:** Bilgisayarınızı geri sayım sayacıyla veya belirli bir saatte otomatik olarak kapanmaya programlayın.
+- ⏱️ **Kullanım Geçmişi:** Bilgisayarınızı hangi gün ve hangi saat aralıklarında ne kadar süreyle kullandığınızı detaylı olarak görüntüleyin.
 - ⏪ **Sistem Geri Yükleme:** Herhangi bir kritik ayar öncesi Windows'un sağlıklı anının güvenli yedeğini tek tıkla oluşturun.
 ---
 
