@@ -1,10 +1,12 @@
-<div align="center">
-  <img src="assets/logo.png" alt="Ü Toolbox Logo" width="128" />
-  # Ü Toolbox
-  ![App Version](https://img.shields.io/badge/version-0.0.1-blue)
-  ![License](https://img.shields.io/badge/license-GPLv3-blue)
-  ![Platform](https://img.shields.io/badge/platform-Windows_11-0078d7)
-</div>
+<h1 align="center">
+  <img src="assets/logo.png" alt="Ü Toolbox Logo" width="128" /><br>
+  Ü Toolbox
+</h1>
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.0.1-blue" alt="App Version">
+  <img src="https://img.shields.io/badge/license-GPLv3-blue" alt="License">
+  <img src="https://img.shields.io/badge/platform-Windows_11-0078d7" alt="Platform">
+</p>
 <br>
 
 **Ü Toolbox**, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için özel olarak tasarlanmış **açık kaynaklı** bir araç setidir. Ağır sistem programlarına ihtiyaç duymadan, modern bir arayüz ile bilgisayarınızın kontrolünü tamamen elinize alın.
