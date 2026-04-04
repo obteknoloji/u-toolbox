@@ -6,6 +6,7 @@
   ![Platform](https://img.shields.io/badge/platform-Windows_11-0078d7)
 </div>
 <br>
+
 **Ü Toolbox**, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için özel olarak tasarlanmış **açık kaynaklı** bir araç setidir. Ağır sistem programlarına ihtiyaç duymadan, modern bir arayüz ile bilgisayarınızın kontrolünü tamamen elinize alın.
 ## Öne Çıkan Özellikler
 - **Sistem İzleme & Özeti:** CPU, RAM, Ekran Kartı, Depolama ve İnternet kullanımınızı anlık olarak modern bir panodan takip edin.
