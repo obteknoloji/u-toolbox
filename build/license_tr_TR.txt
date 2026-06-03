@@ -1,0 +1,9 @@
+﻿Ü Toolbox - Kullanıcı Lisans Sözleşmesi
+
+Bu yazılım "olduğu gibi" sunulmaktadır. Yazılımın kullanımıyla ilgili tüm riskler kullanıcıya aittir. 
+
+1. Lisans Hakkı: Ü Toolbox, kişisel kullanım için ücretsiz bir araçtır.
+2. Sorumluluk Reddi: Geliştirici, bu yazılımın kullanımından doğabilecek herhangi bir veri kaybı veya sistem hasarından sorumlu tutulamaz.
+3. Değişiklikler: Geliştirici, yazılımın özelliklerini veya bu sözleşmeyi dilediği zaman güncelleme hakkını saklı tutar.
+
+Uygulamayı kurarak bu şartları kabul etmiş sayılırsınız.
