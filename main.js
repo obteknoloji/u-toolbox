@@ -302,72 +302,22 @@ ipcMain.handle('get-pc-usage-history', async () => {
   });
 });
 
-let cachedGpuLoad = 0;
-let isGpuPolling = false;
-
-function updateGpuLoad() {
-  if (isGpuPolling) return;
-  isGpuPolling = true;
-  require('child_process').exec('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits', { windowsHide: true }, (err, stdout) => {
-    if (!err && stdout.trim()) {
-      let val = parseInt(stdout.trim());
-      if (!isNaN(val)) {
-        cachedGpuLoad = val;
-        isGpuPolling = false;
-        return;
-      }
-    }
-    require('child_process').exec('typeperf "\\GPU Engine(*)\\Utilization Percentage" -sc 1', { windowsHide: true }, (err2, stdout2) => {
-      if (!err2 && stdout2) {
-        try {
-          const lines = stdout2.trim().split('\n');
-          if (lines.length >= 2) {
-            const valuesLine = lines[lines.length - 1];
-            const values = valuesLine.split(',').slice(1);
-            let maxVal = 0;
-            for (let v of values) {
-              let parsed = parseFloat(v.replace(/"/g, '').trim());
-              if (!isNaN(parsed) && parsed > maxVal) maxVal = parsed;
-            }
-            cachedGpuLoad = Math.round(maxVal);
-          }
-        } catch (e) {}
-      } else {
-        cachedGpuLoad = 0;
-      }
-      isGpuPolling = false;
-    });
-  });
-}
 
 ipcMain.handle('get-usage-stats', async () => {
-  updateGpuLoad();
   const totalMemory = os.totalmem();
   const freeMemory = os.freemem();
   const usedMemory = totalMemory - freeMemory;
   const ramUsageProc = Math.round((usedMemory / totalMemory) * 100) + '%';
 
-  const loadData = await si.currentLoad();
-  const cpuUsageProc = Math.round(loadData.currentLoad) + '%';
-
-  const disks = await si.fsSize();
-  let totalSize = 0, totalUsed = 0;
-  disks.forEach(d => { totalSize += d.size; totalUsed += d.used; });
-  const diskPercentage = totalSize ? Math.round((totalUsed / totalSize) * 100) + '%' : '0%';
-
-  const net = await si.networkStats();
-  let rx = 0, tx = 0;
-  net.forEach(n => { rx += n.rx_sec; tx += n.tx_sec; });
-  const rxMbps = ((rx * 8) / 1000000).toFixed(1);
-  const txMbps = ((tx * 8) / 1000000).toFixed(1);
-  const netString = `↓ ${rxMbps} ↑ ${txMbps}`;
+  const uptimeSecs = os.uptime();
+  const days = Math.floor(uptimeSecs / (3600 * 24));
+  const hours = Math.floor((uptimeSecs % (3600 * 24)) / 3600);
+  const minutes = Math.floor((uptimeSecs % 3600) / 60);
 
   return {
-    cpuUsage: cpuUsageProc,
     ramUsage: ramUsageProc,
-    diskUsage: diskPercentage,
-    gpuUsage: cachedGpuLoad + '%',
-    netUsage: netString
+    uptimeRaw: { days, hours, minutes },
+    hardware: { ram: Math.round(totalMemory / (1024 * 1024 * 1024)) + ' GB' }
   };
 });
 

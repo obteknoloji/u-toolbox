@@ -49,58 +49,12 @@ async function applyLang(lang) {
     }
 
     // Refresh dynamic texts that evaluate on state changes
-    updateDynamicTexts();
+    if (typeof refreshStats === 'function') refreshStats();
   } catch (error) {
     console.error("Localization loading failed:", error);
   }
 }
 
-function updateDynamicTexts() {
-  const ramCurrentStatus = document.getElementById('ram-current-status');
-  const ramGauge = document.getElementById('ram-gauge-value');
-  
-  if (window.electronAPI && (ramCurrentStatus || ramGauge)) {
-    window.electronAPI.getSystemInfo().then(info => {
-      let ramGbString = info.hardware ? info.hardware.ram : '...';
-      const t = currentDictionary;
-      const labelBackground = t.ram_status_bg_l || 'Background Standby Load:';
-      const labelCapacity = t.ram_status_cap_l || 'Total Capacity:';
-      
-      // Update Old Style (System Summary)
-      if (ramCurrentStatus && !ramCurrentStatus.classList.contains('hidden')) {
-        ramCurrentStatus.innerHTML = `
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-             <span style="color:var(--text-muted); font-size:13px;">${labelBackground}</span>
-             <span style="color:#00f2fe; font-weight:600; font-size:15px; text-shadow:0 0 10px rgba(0,242,254,0.3);">${info.ramUsage}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-             <span style="color:var(--text-muted); font-size:13px;">${labelCapacity}</span>
-             <span style="color:#fff; font-weight:600; font-size:15px;">${ramGbString}</span>
-          </div>
-        `;
-      }
-
-      // Update New Style (RAM Viz)
-      const gaugeFill = document.getElementById('ram-gauge-fill');
-      const gaugeVal = document.getElementById('ram-gauge-value');
-      const cardStandby = document.getElementById('ram-card-standby');
-      const cardTotal = document.getElementById('ram-card-total');
-
-      if (gaugeFill && gaugeVal) {
-        const pct = parseInt(info.ramUsage) || 0;
-        gaugeVal.innerText = `${pct}%`;
-        const offset = 628 - (628 * pct) / 100;
-        gaugeFill.style.strokeDashoffset = offset;
-      }
-      if (cardStandby) cardStandby.innerText = info.ramUsage;
-      if (cardTotal) cardTotal.innerText = ramGbString;
-
-    }).catch(() => { });
-  }
-  updateTotalSelectedSize();
-
-
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   // Navigation Logic
@@ -312,27 +266,70 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }).catch(e => console.error(e));
 
+    let uptimeTick = 0;
     async function refreshStats() {
+      const isDashboardVisible = document.getElementById('dashboard').classList.contains('active');
+      const isRamViewVisible = document.getElementById('subview-ram-clean') && document.getElementById('subview-ram-clean').classList.contains('active-sub');
+
+      // Eğer ne Sistem Özeti ne de RAM sayfası açıksa, arka planı hiç yorma!
+      if (!isDashboardVisible && !isRamViewVisible) {
+        return;
+      }
+
       try {
         const stats = await window.electronAPI.getUsageStats();
-        const cEl = document.getElementById('cpu-usage');
-        const rEl = document.getElementById('ram-usage');
-        const gEl = document.getElementById('gpu-usage');
-        const nEl = document.getElementById('net-usage');
 
-        if (cEl) cEl.innerText = stats.cpuUsage;
-        if (rEl) rEl.innerText = stats.ramUsage;
-        if (gEl) gEl.innerText = stats.gpuUsage;
-        if (nEl) {
-           // stats.netUsage format: "↓ X ↑ Y" - we keep this as icons are universal
-           nEl.innerText = stats.netUsage;
+        if (isDashboardVisible) {
+          // 60 saniyede bir (12 * 5sn) veya ilk açılışta güncelle
+          if (stats.uptimeRaw && (uptimeTick === 0 || uptimeTick % 12 === 0)) {
+            const { days, hours, minutes } = stats.uptimeRaw;
+            let uptimeStr = '';
+            if (days > 0) uptimeStr += `${days} ${currentDictionary.unit_day || 'Day'}, `;
+            uptimeStr += `${hours} ${currentDictionary.unit_hour || 'Hour'}, ${minutes} ${currentDictionary.unit_min || 'Min'}`;
+            const uEl = document.getElementById('system-uptime');
+            if (uEl && uEl.innerText !== uptimeStr) {
+               uEl.innerText = uptimeStr;
+            }
+          }
         }
+
+        if (isRamViewVisible) {
+          // RAM Viz Updates
+          const gaugeFill = document.getElementById('ram-gauge-fill');
+          const gaugeVal = document.getElementById('ram-gauge-value');
+          const cardStandby = document.getElementById('ram-card-standby');
+          const cardTotal = document.getElementById('ram-card-total');
+
+          if (gaugeFill && gaugeVal) {
+            const pct = parseInt(stats.ramUsage) || 0;
+            const newText = `${pct}%`;
+            if (gaugeVal.innerText !== newText) {
+              gaugeVal.innerText = newText;
+              const offset = 628 - (628 * pct) / 100;
+              gaugeFill.style.strokeDashoffset = offset;
+            }
+          }
+          if (cardStandby && cardStandby.innerText !== String(stats.ramUsage)) cardStandby.innerText = stats.ramUsage;
+          if (cardTotal && stats.hardware && cardTotal.innerText !== String(stats.hardware.ram)) cardTotal.innerText = stats.hardware.ram;
+        }
+
+        uptimeTick++;
       } catch (e) { }
     }
+    
+    // Switch olaylarında anında güncellenmesi için event listener ekle
+    document.querySelectorAll('.nav-links li').forEach(link => {
+      link.addEventListener('click', () => {
+        if (link.getAttribute('data-target') === 'dashboard') {
+          uptimeTick = 0; // Dashboard'a dönünce anında güncelle
+          refreshStats();
+        }
+      });
+    });
+    
     refreshStats();
     setInterval(() => {
       refreshStats();
-      updateDynamicTexts();
     }, 5000);
 
   } else {
@@ -455,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-ram-done').addEventListener('click', () => {
     document.getElementById('ram-page-result').classList.add('hidden');
     document.getElementById('ram-page-options').classList.remove('hidden');
-    updateDynamicTexts();
+    refreshStats();
   });
 
   document.getElementById('btn-clear-history').addEventListener('click', () => {
@@ -643,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('ram-page-result').classList.add('hidden');
 
     if (window.electronAPI) {
-      updateDynamicTexts(); // Trigger immediate update for the new gauge
+      refreshStats(); // Trigger immediate update for the new gauge
     }
   });
 
@@ -1739,7 +1736,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnUpdaterAction.disabled = true;
         window.electronAPI.downloadUpdate();
       } else if (data.type === 'update-not-available') {
-        updaterStatusText.innerHTML = `<span data-i18n="updater_version_prefix">${t('updater_version_prefix')}</span> ${window.appVersion ? 'v'+window.appVersion : 'v...'}`;
+        updaterStatusText.textContent = t('updater_up_to_date_toast');
+        updaterStatusText.style.color = '#00cc99';
+        setTimeout(() => {
+          updaterStatusText.style.color = '';
+          updaterStatusText.innerHTML = `<span data-i18n="updater_version_prefix">${t('updater_version_prefix')}</span> ${window.appVersion ? 'v'+window.appVersion : 'v...'}`;
+        }, 4000);
         btnUpdaterAction.disabled = false;
         btnUpdaterAction.textContent = t('updater_check_btn');
         showToast(t('updater_up_to_date_toast'), 'success');

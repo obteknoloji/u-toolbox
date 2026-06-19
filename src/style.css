@@ -74,8 +74,6 @@ body {
   width: 250px;
   flex-shrink: 0;
   background-color: var(--sidebar-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-right: 1px solid var(--panel-border);
   display: flex;
   flex-direction: column;
@@ -173,23 +171,26 @@ body {
 /* Main Content */
 #main-content {
   flex-grow: 1;
-  padding: 32px 40px;
-  overflow-y: auto;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .view {
-  display: none;
-  animation: fadeIn 0.4s ease forwards;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  padding: 32px 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 .view.active {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  visibility: visible;
+  opacity: 1;
+  pointer-events: all;
+  z-index: 10;
 }
 
 .view-header {
@@ -208,8 +209,6 @@ body {
 /* Glass Panels */
 .glass-panel {
   background: var(--panel-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--panel-border);
   border-radius: var(--border-radius);
   padding: 24px;
@@ -217,9 +216,8 @@ body {
 }
 .glass-panel:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border-color: rgba(0, 242, 254, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Dashboard Widgets */
@@ -336,9 +334,8 @@ body {
 }
 .btn-primary:hover {
   background: var(--primary-gradient);
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.3);
+  filter: brightness(1.15);
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
 }
 .btn-primary.glow-effect {
   background: var(--primary-gradient);
@@ -493,7 +490,6 @@ input:checked + .slider:before {
 }
 .toast {
   background: rgba(20, 24, 34, 0.9);
-  backdrop-filter: blur(10px);
   border: 1px solid var(--panel-border);
   color: white;
   padding: 16px 20px;
@@ -515,8 +511,6 @@ input:checked + .slider:before {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -563,16 +557,11 @@ body.light-theme .modal-content {
   background: var(--bg-color);
   padding: 32px 40px;
   z-index: 100;
-  transform: translateX(100%);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+  display: none;
   overflow-y: auto;
 }
 .sub-view.active-sub {
-  transform: translateX(0);
-  opacity: 1;
-  pointer-events: all;
+  display: block;
 }
 .btn-icon:hover {
   background: rgba(255,255,255,0.08) !important;
@@ -685,6 +674,7 @@ body.light-theme .size-badge {
   overflow: visible;
   border: 1px solid var(--panel-border);
 }
+
 .gantt-bar {
   position: absolute;
   height: 100%;
@@ -706,7 +696,6 @@ body.light-theme .size-badge {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
   color: #fff;
   padding: 4px 8px;
   border-radius: 6px;
@@ -765,7 +754,8 @@ body.light-theme .gantt-tooltip {
 }
 .hw-card:hover {
   background: var(--secondary-hover);
-  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 .hw-icon {
   font-size: 24px;
@@ -887,14 +877,13 @@ body.light-theme .hw-icon {
   height: 8px;
   background: #00f2fe;
   border-radius: 50%;
-  box-shadow: 0 0 10px #00f2fe;
-  animation: pulse-glow 2s infinite;
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 @keyframes pulse-glow {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7); }
-  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 10px rgba(0, 242, 254, 0); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+  0% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.4; }
 }
 
 .ram-info-grid {
@@ -918,7 +907,6 @@ body.light-theme .hw-icon {
 .ram-info-card:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(0, 242, 254, 0.2);
-  transform: translateY(-2px);
 }
 
 .ram-info-icon {
@@ -985,7 +973,6 @@ body.light-theme .hw-icon {
 .clean-card:hover {
   background: rgba(255,255,255,0.05) !important;
   border-color: rgba(0, 242, 254, 0.3) !important;
-  transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -1005,6 +992,7 @@ body.light-theme .hw-icon {
 .clean-card input[type="checkbox"] {
   width: 22px;
   height: 22px;
+  flex-shrink: 0;
   accent-color: #00f2fe;
   cursor: pointer;
   margin-top: 0px;
