@@ -1384,3 +1384,212 @@ ipcMain.handle('download-update', async () => {
 ipcMain.handle('quit-and-install', () => {
   autoUpdater.quitAndInstall();
 });
+
+// --- Task Scheduler Logic ---
+ipcMain.handle('ts-select-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Scripts/Executables', extensions: ['exe', 'bat', 'cmd', 'ps1'] }
+    ]
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle('ts-list-tasks', async () => {
+  return new Promise((resolve) => {
+    exec('schtasks /Query /FO CSV /V', { windowsHide: true, encoding: 'utf8' }, (error, stdout) => {
+      try {
+        if (!stdout) return resolve({ success: true, data: [] });
+        
+        const lines = stdout.split('\n');
+        const tasks = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                if (char === '"') {
+                    if (inQuotes && row[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+          }
+
+          if (line.includes('UToolbox_')) {
+            const cols = parseCSVRow(line);
+            if (cols && cols.length > 8) {
+              const taskNameCol = cols.find(c => c.includes('UToolbox_'));
+              if (taskNameCol) {
+                const taskName = taskNameCol.split('\\').pop();
+                tasks.push({
+                  taskName: taskName,
+                  nextRunTime: cols[2] ? cols[2].trim() : '-',
+                  status: cols[3] ? cols[3].trim() : '-',
+                  taskToRun: cols[8] ? cols[8].trim() : '-',
+                  scheduleType: cols[18] ? cols[18].trim() : '',
+                  startTime: cols[19] ? cols[19].trim() : ''
+                });
+              }
+            }
+          }
+        }
+        resolve({ success: true, data: tasks });
+      } catch (err) {
+        resolve({ success: false, error: err.message });
+      }
+    });
+  });
+});
+
+ipcMain.handle('ts-create-task', async (event, params) => {
+  return new Promise((resolve) => {
+    try {
+      const taskName = `UToolbox_${params.name.replace(/[^a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ\- ]/g, '').trim().replace(/\s+/g, '_')}`;
+      let commandPath = params.filePath;
+      
+      if (commandPath.toLowerCase().endsWith('.ps1')) {
+        commandPath = `powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \\"${commandPath}\\"`;
+      } else {
+        commandPath = `\\"${commandPath}\\"`;
+      }
+      
+      let scheduleCommand = `schtasks /Create /TN "${taskName}" /TR "${commandPath}" /RL HIGHEST /F`;
+      
+      switch (params.triggerType) {
+        case 'DAILY':
+          scheduleCommand += ` /SC DAILY /ST ${params.time}`;
+          break;
+        case 'WEEKLY':
+          scheduleCommand += ` /SC WEEKLY /ST ${params.time}`;
+          break;
+        case 'ONLOGON':
+          scheduleCommand += ` /SC ONLOGON`;
+          break;
+        case 'ONSTART':
+          scheduleCommand += ` /SC ONSTART`;
+          break;
+        default:
+          scheduleCommand += ` /SC ONSTART`;
+      }
+      
+      exec(scheduleCommand, { windowsHide: true, encoding: 'utf8' }, (error, stdout, stderr) => {
+        if (error) {
+          resolve({ success: false, error: stderr || error.message });
+        } else {
+          resolve({ success: true });
+        }
+      });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+ipcMain.handle('ts-delete-task', async (event, taskName) => {
+  return new Promise((resolve) => {
+    // Only allow UToolbox_ tasks to be deleted for safety
+    if (!taskName.startsWith('UToolbox_')) {
+      return resolve({ success: false, error: 'Unauthorized deletion.' });
+    }
+    const cleanName = taskName.replace(/[^a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ\- ]/g, '').trim().replace(/\s+/g, '_');
+    exec(`schtasks /Delete /TN "${cleanName}" /F`, { windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        resolve({ success: false, error: stderr || error.message });
+      } else {
+        resolve({ success: true });
+      }
+    });
+  });
+});
+
+ipcMain.handle('ts-run-task', async (event, taskName) => {
+  return new Promise((resolve) => {
+    if (!taskName.startsWith('UToolbox_')) {
+      return resolve({ success: false, error: 'Unauthorized execution.' });
+    }
+    const cleanName = taskName.replace(/[^a-zA-Z0-9_ğüşıöçĞÜŞİÖÇ\- ]/g, '').trim().replace(/\s+/g, '_');
+    exec(`schtasks /Run /TN "${cleanName}"`, { windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        resolve({ success: false, error: stderr || error.message });
+      } else {
+        resolve({ success: true });
+      }
+    });
+  });
+});
+
+ipcMain.handle('open-external', async (event, url) => {
+  return require('electron').shell.openExternal(url);
+});
+
+ipcMain.handle('quick-install', async (event, appIds) => {
+  let successCount = 0;
+  let failCount = 0;
+  
+  for (const appId of appIds) {
+    event.sender.send('quick-install-progress', { status: 'installing', appId });
+    try {
+      await new Promise((resolve, reject) => {
+        const { spawn } = require('child_process');
+        const child = spawn('winget', ['install', '--id', appId, '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements'], { windowsHide: true });
+        
+        let fullStdout = '';
+        let fullStderr = '';
+
+        child.stdout.on('data', (data) => {
+          const str = data.toString();
+          fullStdout += str;
+          event.sender.send('quick-install-progress', { status: 'output', appId, text: str });
+        });
+
+        child.stderr.on('data', (data) => {
+          const str = data.toString();
+          fullStderr += str;
+          event.sender.send('quick-install-progress', { status: 'output', appId, text: str });
+        });
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            if (fullStdout.includes('already installed') || fullStdout.includes('No available upgrade found') || fullStdout.includes('zaten yüklü') || fullStdout.includes('Zaten yüklü') || fullStdout.includes('No newer package versions')) {
+              resolve();
+            } else {
+              reject(new Error(fullStdout.trim() || fullStderr.trim() || 'Exit code: ' + code));
+            }
+          }
+        });
+        
+        child.on('error', (err) => {
+           reject(err);
+        });
+      });
+      successCount++;
+      event.sender.send('quick-install-progress', { status: 'success', appId });
+    } catch (err) {
+      failCount++;
+      event.sender.send('quick-install-progress', { status: 'error', appId, error: err.message });
+    }
+  }
+  
+  return { success: true, successCount, failCount };
+});

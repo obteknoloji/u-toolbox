@@ -1695,6 +1695,362 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // -------------------------------------------------------------
+  // Task Scheduler Logic
+  // -------------------------------------------------------------
+  const btnOpenTaskScheduler = document.getElementById('btn-open-task-scheduler');
+  const btnBackTaskScheduler = document.getElementById('btn-back-task-scheduler');
+  const subviewTaskScheduler = document.getElementById('subview-task-scheduler');
+  
+  if (btnOpenTaskScheduler && subviewTaskScheduler && btnBackTaskScheduler) {
+    btnOpenTaskScheduler.addEventListener('click', () => {
+      openSub(subviewTaskScheduler);
+      loadTsTasks();
+    });
+    
+    btnBackTaskScheduler.addEventListener('click', () => {
+      closeSub(subviewTaskScheduler);
+    });
+  }
+
+  const tsTriggerType = document.getElementById('ts-trigger-type');
+  const tsTimeContainer = document.getElementById('ts-time-container');
+  // btnTsSelectFile removed
+  const tsFilePath = document.getElementById('ts-file-path');
+  const btnTsCreate = document.getElementById('btn-ts-create');
+  
+  if (tsTriggerType) {
+    tsTriggerType.addEventListener('change', () => {
+      if (tsTriggerType.value === 'DAILY' || tsTriggerType.value === 'WEEKLY') {
+        tsTimeContainer.style.display = 'block';
+      } else {
+        tsTimeContainer.style.display = 'none';
+      }
+    });
+  }
+
+  if (tsFilePath && window.electronAPI) {
+    tsFilePath.addEventListener('click', async () => {
+      const result = await window.electronAPI.tsSelectFile();
+      if (result) {
+        tsFilePath.value = result;
+      }
+    });
+  }
+
+  if (btnTsCreate && window.electronAPI) {
+    btnTsCreate.addEventListener('click', async () => {
+      const name = document.getElementById('ts-task-name').value.trim();
+      const filePath = tsFilePath.value.trim();
+      const triggerType = tsTriggerType.value;
+      const time = document.getElementById('ts-time').value;
+
+      if (!name || !filePath) {
+        showToast('Please fill all required fields.', 'error');
+        return;
+      }
+
+      btnTsCreate.disabled = true;
+      btnTsCreate.textContent = '...';
+
+      const res = await window.electronAPI.tsCreateTask({ name, filePath, triggerType, time });
+      if (res && res.success) {
+        showToast(t('ts_toast_created'), 'success');
+        document.getElementById('ts-task-name').value = '';
+        tsFilePath.value = '';
+        loadTsTasks();
+      } else {
+        showToast(t('ts_toast_error').replace('{error}', res?.error || 'Unknown'), 'error');
+      }
+
+      btnTsCreate.disabled = false;
+      btnTsCreate.textContent = t('ts_btn_save');
+    });
+  }
+
+  window.deleteTsTask = async (taskName) => {
+    if (!window.electronAPI) return;
+    const res = await window.electronAPI.tsDeleteTask(taskName);
+    if (res && res.success) {
+      showToast(t('ts_toast_deleted'), 'success');
+      loadTsTasks();
+    } else {
+      showToast(t('ts_toast_error').replace('{error}', res?.error || 'Unknown'), 'error');
+    }
+  };
+
+  window.runTsTask = async (taskName) => {
+    if (!window.electronAPI) return;
+    const res = await window.electronAPI.tsRunTask(taskName);
+    if (res && res.success) {
+      showToast(t('ts_toast_run'), 'success');
+    } else {
+      showToast(t('ts_toast_error').replace('{error}', res?.error || 'Unknown'), 'error');
+    }
+  };
+
+  async function loadTsTasks() {
+    if (!window.electronAPI) return;
+    const listContainer = document.getElementById('ts-list-container');
+    if (!listContainer) return;
+    
+    listContainer.innerHTML = '<div style="text-align:center; padding:32px; color:var(--text-muted);">...</div>';
+
+    const res = await window.electronAPI.tsListTasks();
+    if (!res || !res.success || !res.data || res.data.length === 0) {
+      listContainer.innerHTML = `<div style="text-align:center; padding:32px; color:var(--text-muted); font-size:14px;" data-i18n="ts_no_tasks">${t('ts_no_tasks')}</div>`;
+      return;
+    }
+
+    let html = '';
+    const getT = (key, fallback) => (window.appTranslations && window.appTranslations[key]) ? window.appTranslations[key] : fallback;
+
+    for (const task of res.data) {
+      // Translate Status
+      let displayStatus = task.status;
+      if (displayStatus.toLowerCase() === 'ready') displayStatus = getT('ts_status_ready', 'Hazır');
+      else if (displayStatus.toLowerCase() === 'running') displayStatus = getT('ts_status_running', 'Çalışıyor');
+      else if (displayStatus.toLowerCase() === 'disabled') displayStatus = getT('ts_status_disabled', 'Devre Dışı');
+      
+      // Translate Trigger
+      let displayTrigger = task.scheduleType || '';
+      if (displayTrigger.toLowerCase().includes('daily')) displayTrigger = getT('ts_trigger_type_daily', 'Her gün');
+      else if (displayTrigger.toLowerCase().includes('weekly')) displayTrigger = getT('ts_trigger_type_weekly', 'Her hafta');
+      else if (displayTrigger.toLowerCase().includes('logon')) displayTrigger = getT('ts_trigger_type_logon', 'Oturum açıldığında');
+      else if (displayTrigger.toLowerCase().includes('startup') || displayTrigger.toLowerCase().includes('start up')) displayTrigger = getT('ts_trigger_type_startup', 'Açılışta');
+      
+      if (task.startTime && task.startTime !== 'N/A' && task.startTime !== '') {
+        displayTrigger += ` (${task.startTime.substring(0, 5)})`;
+      }
+
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:16px;">
+          <div>
+            <div style="font-weight:600; font-size:15px; color:var(--text-main); margin-bottom:6px;">${task.taskName.replace(/^UToolbox_/, '')}</div>
+            <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">
+              <span style="color:var(--primary); font-weight:500;" data-i18n="ts_next_run">${getT('ts_next_run', 'Sonraki Çalışma:')}</span> ${task.nextRunTime} 
+              <span style="margin: 0 6px;">|</span> 
+              <span style="color:#00f2fe; font-weight:500;" data-i18n="ts_status">${getT('ts_status', 'Durum:')}</span> ${displayStatus}
+              ${displayTrigger ? `<span style="margin: 0 6px;">|</span> <span style="color:#00f2fe; font-weight:500;" data-i18n="ts_trigger_label">${getT('ts_trigger_label', 'Tetikleyici:')}</span> ${displayTrigger}` : ''}
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); font-family:monospace; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:4px; margin-top:6px; display:inline-block; max-width:500px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${task.taskToRun.replace(/"/g, '&quot;')}">
+              ${task.taskToRun}
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px; white-space:nowrap;" onclick="runTsTask('${task.taskName}')" data-i18n="ts_btn_run_now">${getT('ts_btn_run_now', 'Şimdi Çalıştır')}</button>
+            <button class="btn btn-danger" style="font-size:12px; padding:6px 12px; white-space:nowrap;" onclick="deleteTsTask('${task.taskName}')" data-i18n="ts_btn_delete">${getT('ts_btn_delete', 'Sil')}</button>
+          </div>
+        </div>
+      `;
+    }
+    listContainer.innerHTML = html;
+  }
+
+  // --- Quick App Installer (Winget) ---
+const btnOpenQuickInstall = document.getElementById('btn-open-quick-install');
+const btnBackQuickInstall = document.getElementById('btn-back-quick-install');
+const subviewQuickInstall = document.getElementById('subview-quick-install');
+
+const curatedApps = [
+  { id: 'Google.Chrome', name: 'Google Chrome', category: 'cat_browsers' },
+  { id: 'Mozilla.Firefox', name: 'Mozilla Firefox', category: 'cat_browsers' },
+  { id: 'Brave.Brave', name: 'Brave', category: 'cat_browsers' },
+  { id: 'Opera.Opera', name: 'Opera', category: 'cat_browsers' },
+  
+  { id: 'Discord.Discord', name: 'Discord', category: 'cat_social' },
+
+  { id: 'Zoom.Zoom', name: 'Zoom', category: 'cat_social' },
+  { id: 'SlackTechnologies.Slack', name: 'Slack', category: 'cat_social' },
+  { id: 'Microsoft.Teams', name: 'Microsoft Teams', category: 'cat_social' },
+  { id: 'Telegram.TelegramDesktop', name: 'Telegram', category: 'cat_social' },
+  { id: 'WhatsApp.WhatsApp', name: 'WhatsApp', category: 'cat_social' },
+
+  { id: 'Valve.Steam', name: 'Steam', category: 'cat_games' },
+  { id: 'EpicGames.EpicGamesLauncher', name: 'Epic Games', category: 'cat_games' },
+  { id: 'GOG.Galaxy', name: 'GOG Galaxy', category: 'cat_games' },
+  { id: 'ElectronicArts.EADesktop', name: 'EA app', category: 'cat_games' },
+  { id: 'Ubisoft.Connect', name: 'Ubisoft Connect', category: 'cat_games' },
+
+  { id: 'Spotify.Spotify', name: 'Spotify', category: 'cat_media' },
+  { id: 'VideoLAN.VLC', name: 'VLC Media Player', category: 'cat_media' },
+  { id: 'OBSProject.OBSStudio', name: 'OBS Studio', category: 'cat_media' },
+  { id: 'ShareX.ShareX', name: 'ShareX', category: 'cat_media' },
+  { id: 'GIMP.GIMP', name: 'GIMP', category: 'cat_media' },
+  { id: 'Audacity.Audacity', name: 'Audacity', category: 'cat_media' },
+
+  { id: 'voidtools.Everything', name: 'Everything', category: 'cat_tools' },
+  { id: '7zip.7zip', name: '7-Zip', category: 'cat_tools' },
+  { id: 'RARLab.WinRAR', name: 'WinRAR', category: 'cat_tools' },
+  { id: 'GeekUninstaller.GeekUninstaller', name: 'Geek Uninstaller', category: 'cat_tools' },
+  { id: 'Microsoft.PowerToys', name: 'PowerToys', category: 'cat_tools' },
+  { id: 'Rufus.Rufus', name: 'Rufus', category: 'cat_tools' },
+  { id: 'AnyDeskSoftwareGmbH.AnyDesk', name: 'AnyDesk', category: 'cat_tools' },
+  { id: 'TeamViewer.TeamViewer', name: 'TeamViewer', category: 'cat_tools' },
+  { id: 'qBittorrent.qBittorrent', name: 'qBittorrent', category: 'cat_tools' },
+
+  { id: 'Notepad++.Notepad++', name: 'Notepad++', category: 'cat_dev' },
+  { id: 'Microsoft.VisualStudioCode', name: 'VS Code', category: 'cat_dev' },
+  { id: 'Git.Git', name: 'Git', category: 'cat_dev' },
+  { id: 'GitHub.GitHubDesktop', name: 'GitHub Desktop', category: 'cat_dev' },
+  { id: 'Termius.Termius', name: 'Termius', category: 'cat_dev' },
+  { id: 'Docker.DockerDesktop', name: 'Docker Desktop', category: 'cat_dev' },
+  { id: 'OpenJS.NodeJS', name: 'Node.js', category: 'cat_dev' },
+  { id: 'Python.Python.3.12', name: 'Python 3.12', category: 'cat_dev' },
+
+  { id: 'Notion.Notion', name: 'Notion', category: 'cat_cloud' },
+  { id: 'Obsidian.Obsidian', name: 'Obsidian', category: 'cat_cloud' },
+  { id: 'Google.GoogleDrive', name: 'Google Drive', category: 'cat_cloud' },
+  { id: 'Dropbox.Dropbox', name: 'Dropbox', category: 'cat_cloud' },
+  { id: 'TheDocumentFoundation.LibreOffice', name: 'LibreOffice', category: 'cat_cloud' },
+
+  { id: 'Bitwarden.Bitwarden', name: 'Bitwarden', category: 'cat_security' },
+  { id: 'Malwarebytes.Malwarebytes', name: 'Malwarebytes', category: 'cat_security' },
+  { id: 'ProtonTechnologies.ProtonVPN', name: 'Proton VPN', category: 'cat_security' },
+  { id: 'Cloudflare.Warp', name: 'Cloudflare WARP', category: 'cat_security' }
+];
+
+function loadQuickInstallApps() {
+  const container = document.getElementById('qi-apps-grid');
+  if (!container) return;
+  
+  const grouped = {};
+  curatedApps.forEach(app => {
+    if (!grouped[app.category]) grouped[app.category] = [];
+    grouped[app.category].push(app);
+  });
+
+  let html = '';
+  for (const [category, apps] of Object.entries(grouped)) {
+    html += `<div style="grid-column: 1 / -1; margin-top:16px; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">
+               <h3 style="font-size:15px; color:var(--primary); margin:0; text-transform:uppercase; letter-spacing:0.5px;" data-i18n="${category}">${window.appTranslations ? window.appTranslations[category] || category : category}</h3>
+             </div>`;
+    apps.forEach(app => {
+      html += `
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:6px; padding:10px 14px; display:flex; align-items:center; gap:12px; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+          <input type="checkbox" class="qi-checkbox" value="${app.id}" id="chk-${app.id}" style="width:16px; height:16px; accent-color:var(--primary); cursor:pointer; flex-shrink:0;">
+          <label for="chk-${app.id}" style="display:flex; align-items:center; gap:10px; cursor:pointer; width:100%;">
+            <div>
+              <div style="font-weight:600; font-size:14px; color:var(--text-main);">${app.name}</div>
+            </div>
+          </label>
+        </div>
+      `;
+    });
+  }
+  container.innerHTML = html;
+}
+
+if (btnOpenQuickInstall && btnBackQuickInstall && subviewQuickInstall) {
+  btnOpenQuickInstall.addEventListener('click', () => {
+    openSub(subviewQuickInstall);
+    loadQuickInstallApps();
+  });
+  btnBackQuickInstall.addEventListener('click', () => closeSub(subviewQuickInstall));
+}
+
+const btnQuickInstallStart = document.getElementById('btn-quick-install-start');
+const qiProgressContainer = document.getElementById('qi-progress-container');
+const qiProgressLog = document.getElementById('qi-progress-log');
+
+const btnQiProgressClose = document.getElementById('btn-qi-progress-close');
+if (btnQiProgressClose) {
+  btnQiProgressClose.addEventListener('click', () => {
+    if (qiProgressContainer) qiProgressContainer.style.display = 'none';
+  });
+}
+
+if (btnQuickInstallStart) {
+  btnQuickInstallStart.addEventListener('click', async () => {
+    const checkboxes = document.querySelectorAll('.qi-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+      showToast(currentDictionary['msg_no_selection'] || 'Please select at least one item!', 'warning');
+      return;
+    }
+    
+    btnQuickInstallStart.disabled = true;
+    qiProgressContainer.style.display = 'flex';
+    qiProgressLog.innerHTML = `<div style="color:#08a4ff;">Starting installation for ${selectedIds.length} apps...</div>`;
+    
+    await window.electronAPI.quickInstall(selectedIds);
+    
+    btnQuickInstallStart.disabled = false;
+    showToast(currentDictionary['msg_tweak_applied'] || 'Installation process completed!', 'success');
+    
+    // 5 saniye sonra popup'ı otomatik kapat
+    setTimeout(() => {
+      if (qiProgressContainer && qiProgressContainer.style.display !== 'none') {
+        qiProgressContainer.style.display = 'none';
+      }
+    }, 5000);
+  });
+}
+
+if (window.electronAPI && window.electronAPI.onQuickInstallProgress) {
+  window.electronAPI.onQuickInstallProgress((data) => {
+    const { status, appId, error, text: outText } = data;
+    let color = '#fff';
+    let text = '';
+    
+    const appName = curatedApps.find(a => a.id === appId)?.name || appId;
+    
+    if (!qiProgressLog) return;
+
+    if (status === 'output') {
+       let outDiv = document.getElementById('qi-out-' + appId.replace(/\./g, '-'));
+       if (!outDiv) {
+         outDiv = document.createElement('div');
+         outDiv.id = 'qi-out-' + appId.replace(/\./g, '-');
+         outDiv.style.color = '#888';
+         outDiv.style.marginLeft = '12px';
+         outDiv.style.fontSize = '12px';
+         qiProgressLog.appendChild(outDiv);
+       }
+       // Process output
+       let lines = outText.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 1 && /[a-zA-Z0-9]/.test(l));
+       if (lines.length > 0) {
+         let lastLine = lines[lines.length - 1];
+         outDiv.innerText = '> ' + lastLine.substring(0, 80) + (lastLine.length > 80 ? '...' : '');
+         
+         // Add UAC warning if it's installing
+         if (lastLine.includes('Starting package install')) {
+            let uacWarn = document.getElementById('uac-warn-' + appId.replace(/\./g, '-'));
+            if (!uacWarn) {
+               uacWarn = document.createElement('div');
+               uacWarn.id = 'uac-warn-' + appId.replace(/\./g, '-');
+               uacWarn.style.color = '#ffcc00';
+               uacWarn.style.marginTop = '4px';
+               uacWarn.style.fontSize = '12px';
+               uacWarn.innerText = '⚠️ Lütfen görev çubuğunda yanıp sönen bir Yönetici İzni (UAC) kalkanı olup olmadığını kontrol edin!';
+               outDiv.appendChild(uacWarn);
+            }
+         }
+       }
+       qiProgressLog.scrollTop = qiProgressLog.scrollHeight;
+       return;
+    }
+
+    if (status === 'installing') {
+      color = '#ff9900';
+      text = `[INSTALLING] Downloading and installing ${appName}...`;
+    } else if (status === 'success') {
+      color = '#00cc99';
+      text = `[SUCCESS] ${appName} installed successfully!`;
+      // remove output div
+      let outDiv = document.getElementById('qi-out-' + appId.replace(/\./g, '-'));
+      if (outDiv) outDiv.remove();
+    } else if (status === 'error') {
+      color = '#ff4757';
+      text = `[ERROR] Failed to install ${appName}: ${error}`;
+    }
+    
+    qiProgressLog.innerHTML += `<div style="color:${color}; margin-top:4px;">${text}</div>`;
+    qiProgressLog.scrollTop = qiProgressLog.scrollHeight;
+  });
+}
+
 });
 
   // Updater Logic
@@ -1783,3 +2139,4 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   }
 });
+

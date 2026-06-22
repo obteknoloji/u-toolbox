@@ -1063,3 +1063,12 @@ body.light-theme .result-box {
 body.light-theme .gauge-bg {
   stroke: rgba(0, 0, 0, 0.1);
 }
+
+/* Global Focus Styles */
+input:not([type="checkbox"]):not([type="radio"]):focus, 
+select:focus, 
+textarea:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 136, 255, 0.35) !important;
+}

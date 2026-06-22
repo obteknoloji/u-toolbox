@@ -425,6 +425,55 @@
               style="width:220px; padding:12px 24px; white-space:nowrap; font-weight:600;"
               data-i18n="tools_folder_compressor_btn">Sıkıştırma Aracını Aç</button>
           </div>
+
+          <!-- Görev Zamanlayıcı Kartı -->
+          <div class="action-card glass-panel" style="grid-column: 1 / -1;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div class="card-icon" style="margin-bottom:0;">⏱️</div>
+                <div class="card-info">
+                  <h3 style="margin-bottom:6px;" data-i18n="tool_ts_title">Gelişmiş Görev Zamanlayıcı</h3>
+                  <p style="font-size:13px; max-width:550px; line-height:1.5;" data-i18n="tool_ts_desc">Kendi .exe, .bat
+                    veya .ps1 scriptlerinizi belirli zamanlarda otomatik çalışması için programlayın.</p>
+                </div>
+              </div>
+              <button class="btn btn-primary" id="btn-open-task-scheduler"
+                style="width:220px; padding:12px 24px; white-space:nowrap; font-weight:600;"
+                data-i18n="tool_ts_btn">Zamanlayıcıyı Aç</button>
+            </div>
+          </div>
+
+          <!-- Toplu Program Kurucu Kartı -->
+          <div class="action-card glass-panel"
+            style="grid-column: 1 / -1; display:flex; flex-direction: row; justify-content:space-between; align-items:center; background:linear-gradient(135deg, rgba(255, 153, 0, 0.05) 0%, rgba(0, 0, 0, 0.0) 100%); border:1px solid rgba(255, 153, 0, 0.2); gap: 20px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div class="card-icon" style="margin-bottom:0; color:#ff9900;">⚡</div>
+              <div class="card-info" style="text-align:left;">
+                <h3 style="margin-bottom:6px;" data-i18n="tool_quick_install_title">Toplu Program Kurucu (Winget)</h3>
+                <p style="font-size:13px; max-width:550px; line-height:1.5;" data-i18n="tool_quick_install_desc">Yeni
+                  formattan sonra sık kullanılan programları tek tıkla arkaplanda sessizce kurun.</p>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-open-quick-install"
+              style="width:220px; padding:12px 24px; white-space:nowrap; font-weight:600;"
+              data-i18n="tool_quick_install_btn">Kurucuyu Aç</button>
+          </div>
+
+          <!-- V-Manager Kartı -->
+          <div class="action-card glass-panel"
+            style="grid-column: 1 / -1; display:flex; flex-direction: row; justify-content:space-between; align-items:center; background:linear-gradient(135deg, rgba(50, 205, 50, 0.05) 0%, rgba(0, 0, 0, 0.0) 100%); border:1px solid rgba(50, 205, 50, 0.2); gap: 20px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div class="card-icon" style="margin-bottom:0; color:#32CD32; display:flex; align-items:center; justify-content:center;">
+                <img src="./v-manager-logo.png" alt="V-Manager" style="width:32px; height:32px; object-fit:contain; filter: drop-shadow(0 0 8px rgba(50,205,50,0.5));">
+              </div>
+              <div class="card-info" style="text-align:left;">
+                <h3 style="margin-bottom:6px; display:flex; align-items:center; gap:8px;"><span data-i18n="tool_vmanager_title">V-Manager</span> <span data-i18n="tool_vmanager_badge" style="background: rgba(50,205,50,0.15); color: #32CD32; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid rgba(50,205,50,0.3);">⭐ Onursal Atıf</span></h3>
+                <p style="font-size:13px; max-width:550px; line-height:1.5;" data-i18n="tool_vmanager_desc">V-Manager, DLSS Enabler ve Optiscaler gibi FPS arttıran modların bir yönetim uygulaması.</p>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="if(window.electronAPI && window.electronAPI.openExternal) { window.electronAPI.openExternal('https://github.com/vuenxx/v-manager'); }"
+              style="width:220px; padding:12px 24px; white-space:nowrap; font-weight:600;" data-i18n="tool_vmanager_btn">İncele</button>
+          </div>
         </div>
       </section>
 
@@ -709,13 +758,13 @@
                   <label style="display:block; margin-bottom:8px; font-size:13px; font-weight:600;"><span
                       data-i18n="shut_hr">Saat Sonra</span></label>
                   <input type="number" id="shut-hrs" min="0" max="24" value="1" class="form-input"
-                    style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color: var(--text-main); border-radius:8px; font-size:16px;">
+                    style="width:100%; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px;">
                 </div>
                 <div style="flex:1;">
                   <label style="display:block; margin-bottom:8px; font-size:13px; font-weight:600;"><span
                       data-i18n="shut_min">Dakika Sonra</span></label>
                   <input type="number" id="shut-mins" min="0" max="59" value="0" class="form-input"
-                    style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color: var(--text-main); border-radius:8px; font-size:16px;">
+                    style="width:100%; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px;">
                 </div>
               </div>
             </div>
@@ -725,7 +774,7 @@
                 <label style="display:block; margin-bottom:8px; font-size:13px; font-weight:600;"><span
                     data-i18n="shut_time">Saati Seçin (Örn: 23:30)</span></label>
                 <input type="time" id="shut-time" class="form-input"
-                  style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color: var(--text-main); border-radius:8px; font-size:16px;">
+                  style="width:100%; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px;">
               </div>
             </div>
 
@@ -1295,6 +1344,148 @@
     </div>
   </section>
 
+
+  <!-- Alt Sayfa: Görev Zamanlayıcı -->
+  <section id="subview-task-scheduler" class="sub-view" style="overflow-y:auto;">
+    <header class="view-header" style="display:flex; align-items:center; gap:16px;">
+      <button id="btn-back-task-scheduler" class="btn-icon"
+        style="background:transparent; border:none; color:var(--text-main); font-size:28px; cursor:pointer; padding:4px 8px; border-radius:8px; transition:0.2s;"
+        data-i18n="btn_back"> </button>
+      <div>
+        <h1 style="margin-bottom:4px; font-size:26px;" data-i18n="ts_subview_title">Görev Zamanlayıcı</h1>
+        <p style="font-size:14px; color:var(--text-muted);" data-i18n="ts_subview_desc">Windows Görev Zamanlayıcı
+          altyapısı ile otomasyonları yönetin.</p>
+      </div>
+    </header>
+
+    <div class="glass-panel"
+      style="padding:32px; max-width:1100px; margin: 0 auto; margin-top: 40px; border-radius:16px; display:flex; flex-direction:column; gap:40px;">
+
+      <!-- Yeni Görev Formu -->
+      <div>
+        <h2 style="font-size:18px; margin-bottom:16px;" data-i18n="ts_form_title">Yeni Görev Yapılandırması</h2>
+        <div style="display:flex; flex-direction:column; gap:24px;">
+
+          <div style="display:flex; gap:16px; align-items:center;">
+            <div style="flex:1;">
+              <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;"
+                data-i18n="ts_form_name">Görev Adı:</label>
+              <input type="text" id="ts-task-name" class="form-input"
+                style="width:100%; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px;"
+                data-i18n-placeholder="ts_form_name_placeholder" placeholder="Örn: Günlük Temizlik">
+            </div>
+            <div style="flex:1;">
+              <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;"
+                data-i18n="ts_form_trigger">Tetikleyici Tipi:</label>
+              <select id="ts-trigger-type" class="form-input"
+                style="width:100%; padding:12px; background-color:#2b2d31; border:1px solid var(--panel-border); color:#ffffff; border-radius:8px; font-size:16px; color-scheme: dark;">
+                <option value="DAILY" data-i18n="ts_trigger_daily" style="background-color:#2b2d31; color:#ffffff;">Her
+                  gün aynı saatte</option>
+                <option value="WEEKLY" data-i18n="ts_trigger_weekly" style="background-color:#2b2d31; color:#ffffff;">
+                  Her hafta aynı saatte</option>
+                <option value="ONLOGON" data-i18n="ts_trigger_onlogon" style="background-color:#2b2d31; color:#ffffff;">
+                  Kullanıcı Oturum Açtığında</option>
+                <option value="ONSTART" data-i18n="ts_trigger_onstart" style="background-color:#2b2d31; color:#ffffff;">
+                  Bilgisayar Açıldığında</option>
+              </select>
+            </div>
+            <div style="width:120px;" id="ts-time-container">
+              <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;"
+                data-i18n="ts_form_time">Saat:</label>
+              <input type="time" id="ts-time" class="form-input"
+                style="width:100%; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px;"
+                value="12:00">
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:13px; color:var(--text-muted); margin-bottom:6px;"
+              data-i18n="ts_form_file">Çalıştırılacak Dosya:</label>
+            <div style="display:flex; gap:12px; align-items: stretch;">
+              <input type="text" id="ts-file-path" class="form-input"
+                style="flex:1; min-width: 0; padding:12px; background:var(--secondary-bg); border:1px solid var(--panel-border); color:var(--text-main); border-radius:8px; font-size:16px; cursor:pointer;"
+                readonly data-i18n-placeholder="ts_form_file_placeholder" placeholder="Seçmek için tıklayın...">
+              <button id="btn-ts-create" class="btn btn-primary glow-effect"
+                style="flex: 0 0 auto; width: auto; min-width: 150px; padding:0 24px; font-size:15px; font-weight:600; border-radius:8px;"
+                data-i18n="ts_btn_save">Görevi Oluştur</button>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
+      <!-- Görev Listesi -->
+      <div>
+        <h2 style="font-size:18px; margin-bottom:16px;" data-i18n="ts_list_title">Zamanlanmış Görevler</h2>
+        <div id="ts-list-container" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- List items will be injected here -->
+          <div style="text-align:center; padding:32px; color:var(--text-muted); font-size:14px;" id="ts-empty-state"
+            data-i18n="ts_no_tasks">
+            Ü Toolbox tarafından oluşturulmuş görev bulunamadı.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Alt Sayfa: Toplu Program Kurucu -->
+  <section id="subview-quick-install" class="sub-view" style="overflow-y:auto;">
+    <header class="view-header" style="display:flex; align-items:center; gap:16px;">
+      <button id="btn-back-quick-install" class="btn-icon"
+        style="background:transparent; border:none; color:var(--text-main); font-size:28px; cursor:pointer; padding:4px 8px; border-radius:8px; transition:0.2s;"
+        data-i18n="btn_back">←</button>
+      <div>
+        <h1 style="margin-bottom:4px; font-size:26px;" data-i18n="tool_quick_install_title">Toplu Program Kurucu
+          (Winget)</h1>
+        <p style="font-size:14px; color:var(--text-muted);" data-i18n="sub_quick_install_p">Sistem Araçları / Toplu
+          Program Kurucu</p>
+      </div>
+    </header>
+
+    <div class="glass-panel"
+      style="padding:32px; max-width:1100px; margin: 0 auto; margin-top: 20px; border-radius:16px;">
+
+      <div style="position: sticky; top: -12px; z-index: 100; background: rgba(21, 23, 26, 0.85); backdrop-filter: blur(12px); padding: 32px 32px 16px 32px; margin: -32px -32px 16px -32px; border-top-left-radius: 16px; border-top-right-radius: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+<div
+        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+        <div style="font-size:15px; color:var(--text-muted); white-space:nowrap;" data-i18n="qi_select_apps">Kurmak
+          istediğiniz programları seçin:</div>
+        <button class="btn btn-primary" id="btn-quick-install-start"
+          style="padding:10px 32px; font-weight:600; white-space:nowrap; flex: 0 0 auto; width: max-content;"
+          data-i18n="qi_btn_install_selected">Seçilenleri Kur</button>
+      </div>
+
+      <div
+        style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 0px; display: flex; align-items: center; gap: 12px;">
+        <i class="fa-solid fa-shield-halved" style="color: #2ecc71; font-size: 20px;"></i>
+        <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+          <span style="color: var(--text-main); font-weight: 600;" data-i18n="qi_secure_source_title">Güvenli
+            Kaynak:</span>
+          <span data-i18n="qi_secure_source_desc">Bu listedeki tüm programlar doğrudan </span>
+          <a href="#"
+            onclick="if(window.electronAPI && window.electronAPI.openExternal) { window.electronAPI.openExternal('https://github.com/microsoft/winget-pkgs'); } else { console.log('electronAPI.openExternal not found'); }"
+            style="color: var(--primary); text-decoration: none; font-weight: 600;"
+            data-i18n="qi_secure_source_link">Microsoft Winget Resmi Reposu'ndan</a>
+          <span data-i18n="qi_secure_source_desc2"> indirilmekte ve kurulmaktadır. Sisteminize güvenle
+            yükleyebilirsiniz.</span>
+        </div>
+      </div>
+</div>
+
+      <!-- İlerleme Kutusu -->
+      
+
+      <div id="qi-apps-grid"
+        style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
+        <!-- Apps injected via JS -->
+      </div>
+
+      
+    </div>
+  </section>
+
   <script type="module" src="/src/main.js"></script>
 
 
@@ -1440,6 +1631,17 @@
 
     </div>
   </section>
+
+    <!-- İlerleme Kutusu (Popup) -->
+    <div id="qi-progress-container" style="display:none; position:fixed; bottom:24px; right:24px; width:400px; max-width:90vw; background:rgba(20,20,20,0.95); backdrop-filter:blur(10px); border-radius:12px; padding:20px; border:1px solid rgba(255,153,0,0.4); box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:9999; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0; color:var(--text-main); font-size:16px;" data-i18n="qi_install_progress_title">Kurulum İlerlemesi</h3>
+        <button id="btn-qi-progress-close" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:16px; padding:4px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="qi-progress-log" style="font-family:monospace; font-size:13px; color:var(--text-muted); max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+      </div>
+    </div>
+  
 </body>
 
 </html>

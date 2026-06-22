@@ -47,5 +47,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdaterEvent: (callback) => {
     ipcRenderer.removeAllListeners('updater-event');
     ipcRenderer.on('updater-event', (e, data) => callback(data));
+  },
+  
+  // Task Scheduler
+  tsSelectFile: () => ipcRenderer.invoke('ts-select-file'),
+  tsListTasks: () => ipcRenderer.invoke('ts-list-tasks'),
+  tsCreateTask: (params) => ipcRenderer.invoke('ts-create-task', params),
+  tsDeleteTask: (taskName) => ipcRenderer.invoke('ts-delete-task', taskName),
+  tsRunTask: (taskName) => ipcRenderer.invoke('ts-run-task', taskName),
+  
+  // Quick App Installer (Winget)
+  quickInstall: (appIds) => ipcRenderer.invoke('quick-install', appIds),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  onQuickInstallProgress: (callback) => {
+    ipcRenderer.removeAllListeners('quick-install-progress');
+    ipcRenderer.on('quick-install-progress', (e, data) => callback(data));
   }
 });
