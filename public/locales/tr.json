@@ -126,7 +126,7 @@
   "nav_about": "Hakkında",
   "about_title": "Hakkında",
   "about_desc": "Ü Toolbox Uygulama Bilgileri",
-  "about_content": "Bu uygulama, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için tasarlanmış kapsamlı bir araç setidir.<br><br><img src=\"./logo-green.png\" style=\"width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px;\">Geliştirici: OB Teknoloji & Topluluk",
+  "about_content": "Bu uygulama, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için tasarlanmış kapsamlı bir araç setidir.<br><br><img src=\"./logo-green.png\" onclick=\"window.electronAPI.openExternal('https://obteknoloji.com/')\" style=\"width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px; cursor: pointer; transition: transform 0.2s;\" onmouseover=\"this.style.transform='scale(1.05)'\" onmouseout=\"this.style.transform='scale(1)'\">Geliştirici: OB Teknoloji & Topluluk",
   "dash_hw_disk": "Depolama",
   "hw_loading": "Sistem bileşenleri taranıyor, lütfen bekleyin...",
   "dash_slot": "Yuva",
