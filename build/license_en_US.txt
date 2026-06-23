@@ -1,0 +1,9 @@
+﻿Ü Toolbox - User License Agreement
+
+This software is provided "as is", without warranty of any kind. Use at your own risk.
+
+1. License Rights: Ü Toolbox is a free utility for personal use.
+2. Disclaimer: The developer is not responsible for any data loss or system damage arising from the use of this software.
+3. Modifications: The developer reserves the right to update features or this agreement at any time.
+
+By installing this software, you agree to these terms.

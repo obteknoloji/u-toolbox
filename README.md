@@ -13,7 +13,6 @@
 
 **Ü Toolbox**, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için özel olarak tasarlanmış **açık kaynaklı** bir araç setidir. Ağır sistem programlarına ihtiyaç duymadan, modern bir arayüz ile bilgisayarınızın kontrolünü tamamen elinize alın.
 ## Öne Çıkan Özellikler
-- **Sistem İzleme & Özeti:** CPU, RAM, Ekran Kartı, Depolama ve İnternet kullanımınızı anlık olarak modern bir panodan takip edin.
 - **Derinlemesine Temizlik:** Temp, Prefetch, Windows Update artıkları, Minidump ve önbellek dosyalarını güvenle temizleyerek disk alanı açın. Temizlik geçmişinizi saklayın.
 - **RAM Optimizasyonu:** Arka planda bekleyen ve askıda kalan uygulamaların bellekteki (Working Set) yerini zorla boşaltarak sistemi rahatlatın.
 - **Gelişmiş Windows Özelleştirici:** Ağ darboğazını (Network Throttling) kaldırma, Nagle algoritmasını kapatıp ping düşürme, işlemci mikro uykularını iptal etme (Ultimate Performance) vb. gizli Windows 11 ayarlarına tek tıkla erişin.
