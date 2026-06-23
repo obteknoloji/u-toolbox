@@ -93,7 +93,9 @@
           <p data-i18n="about_content" style="color: var(--text-muted); line-height: 1.6;">
             Bu uygulama, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize
             etmek için tasarlanmış kapsamlı bir araç setidir.<br><br><img src="./logo-green.png"
-              style="width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px;">Geliştirici:
+              onclick="window.electronAPI.openExternal('https://obteknoloji.com/')" 
+              style="width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px; cursor: pointer; transition: transform 0.2s;" 
+              onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Geliştirici:
             OB Teknoloji & Topluluk
           </p>
         </div>

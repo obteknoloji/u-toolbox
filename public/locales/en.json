@@ -126,7 +126,7 @@
   "nav_about": "About",
   "about_title": "About",
   "about_desc": "Ü Toolbox Application Info",
-  "about_content": "This application is a comprehensive toolkit designed to enhance your Windows 11 experience, boost your privacy, and maximize system performance.<br><br><img src=\"./logo-green.png\" style=\"width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px;\">Developer: OB Teknoloji & Community",
+  "about_content": "This application is a comprehensive toolkit designed to enhance your Windows 11 experience, boost your privacy, and maximize system performance.<br><br><img src=\"./logo-green.png\" onclick=\"window.electronAPI.openExternal('https://obteknoloji.com/')\" style=\"width: 72px; height: 72px; display: block; margin-bottom: 12px; border-radius: 8px; cursor: pointer; transition: transform 0.2s;\" onmouseover=\"this.style.transform='scale(1.05)'\" onmouseout=\"this.style.transform='scale(1)'\">Developer: OB Teknoloji & Community",
   "dash_hw_disk": "Storage",
   "hw_loading": "Scanning hardware components, please wait...",
   "dash_slot": "Slot",
