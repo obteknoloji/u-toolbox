@@ -3,11 +3,11 @@
   Ü Toolbox
 </h1>
 <p align="center">
+    <img src="https://img.shields.io/badge/platform-Windows_11-0078d7" alt="Platform">
   <a href="https://github.com/obteknoloji/u-toolbox/releases/latest">
     <img src="https://img.shields.io/github/v/release/obteknoloji/u-toolbox?label=version&color=blue" alt="Latest Release">
   </a>
   <img src="https://img.shields.io/badge/license-GPLv3-blue" alt="License">
-  <img src="https://img.shields.io/badge/platform-Windows_11-0078d7" alt="Platform">
 </p>
 <br>
 
