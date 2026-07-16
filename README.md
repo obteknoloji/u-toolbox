@@ -12,6 +12,9 @@
 <br>
 
 **Ü Toolbox**, Windows 11 deneyiminizi iyileştirmek, gizliliğinizi artırmak ve sistem performansını maksimize etmek için özel olarak tasarlanmış **açık kaynaklı** bir araç setidir. Ağır sistem programlarına ihtiyaç duymadan, modern bir arayüz ile bilgisayarınızın kontrolünü tamamen elinize alın.
+
+<img src="https://raw.githubusercontent.com/obteknoloji/u-toolbox/refs/heads/main/preview.png">
+
 ## Öne Çıkan Özellikler
 - **Derinlemesine Temizlik:** Temp, Prefetch, Windows Update artıkları, Minidump ve önbellek dosyalarını güvenle temizleyerek disk alanı açın. Temizlik geçmişinizi saklayın.
 - **RAM Optimizasyonu:** Arka planda bekleyen ve askıda kalan uygulamaların bellekteki (Working Set) yerini zorla boşaltarak sistemi rahatlatın.
