@@ -246,12 +246,10 @@ ipcMain.handle('get-hardware-info', async () => {
   const totalRamGB = Math.round(os.totalmem() / (1024 * 1024 * 1024));
 
   const graphics = await si.graphics();
-  const gpuName = graphics.controllers.length > 0 ? graphics.controllers[0].model : 'Bilinmeyen GPU';
-  let gpuVramGB = 0;
-  if (graphics.controllers.length > 0 && graphics.controllers[0].vram) {
-    // VRAM is usually in MB, convert to GB
-    gpuVramGB = Math.round(graphics.controllers[0].vram / 1024);
-  }
+  const gpus = graphics.controllers.map(g => ({
+    name: g.model || 'Bilinmeyen GPU',
+    vramGB: g.vram ? Math.round(g.vram / 1024) : 0
+  }));
 
   const diskLayout = await si.diskLayout();
   const disks = diskLayout.map(d => ({
@@ -266,8 +264,7 @@ ipcMain.handle('get-hardware-info', async () => {
     ram: ramName,
     ramSlots,
     totalRamGB,
-    gpu: gpuName,
-    gpuVramGB,
+    gpus,
     disks
   };
 });

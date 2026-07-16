@@ -1,5 +1,7 @@
 // main.js - Vanilla JS Logic for UI
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
+window.mainViewForwardStack = [];
 let currentDictionary = {};
 let currentLang = localStorage.getItem('appLang') || 'tr';
 
@@ -63,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   navLinks.forEach(link => {
     link.addEventListener('click', () => {
+      window.mainViewForwardStack = [];
       // Remove active class from all links
       navLinks.forEach(l => l.classList.remove('active'));
       // Add active class to clicked link
@@ -125,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = 'toast';
 
-    let icon = 'ℹ️';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '❌';
+    let icon = '<i class="fa-solid fa-circle-info"></i>';
+    if (type === 'success') icon = '<i class="fa-solid fa-circle-check"></i>';
+    if (type === 'error') icon = '<i class="fa-solid fa-circle-xmark"></i>';
 
     // Translate and replace placeholders
     let translatedMsg = getT(message, ...args);
@@ -207,29 +210,39 @@ document.addEventListener('DOMContentLoaded', () => {
       function renderHwHTML(hardware, getLbl) {
         let html = `
                 <div class="hw-card">
-                  <div class="hw-icon">🖧</div>
+                  <div class="hw-icon"><i class="fa-solid fa-network-wired"></i></div>
                   <div class="hw-details">
                     <span class="hw-label" data-i18n="dash_hw_mb">${getLbl('dash_hw_mb', 'Motherboard')}</span>
                     <span class="hw-value" title="${hardware.mb || getLbl('msg_hw_unknown', 'Unknown')}">${hardware.mb || getLbl('msg_hw_unknown', 'Unknown')}</span>
                   </div>
                 </div>
                 <div class="hw-card">
-                  <div class="hw-icon">🧠</div>
+                  <div class="hw-icon"><i class="fa-solid fa-microchip"></i></div>
                   <div class="hw-details">
                     <span class="hw-label" data-i18n="dash_hw_cpu">${getLbl('dash_hw_cpu', 'Processor')}</span>
                     <span class="hw-value" title="${hardware.cpu || getLbl('msg_hw_unknown', 'Unknown')}">${hardware.cpu || getLbl('msg_hw_unknown', 'Unknown')}</span>
                   </div>
                 </div>
+              `;
+
+        if (hardware.gpus) {
+          hardware.gpus.forEach(gpu => {
+            html += `
                 <div class="hw-card">
-                  <div class="hw-icon">🎮</div>
-                  ${hardware.gpuVramGB && hardware.gpuVramGB > 0 ? `<div class="hw-badge">${hardware.gpuVramGB} GB</div>` : ''}
+                  <div class="hw-icon"><i class="fa-solid fa-gamepad"></i></div>
+                  ${gpu.vramGB && gpu.vramGB > 0 ? `<div class="hw-badge">${gpu.vramGB} GB</div>` : ''}
                   <div class="hw-details">
                     <span class="hw-label" data-i18n="dash_hw_gpu">${getLbl('dash_hw_gpu', 'Graphics')}</span>
-                    <span class="hw-value" title="${hardware.gpu || getLbl('msg_hw_unknown', 'Unknown')}">${hardware.gpu || getLbl('msg_hw_unknown', 'Unknown')}</span>
+                    <span class="hw-value" title="${gpu.name || getLbl('msg_hw_unknown', 'Unknown')}">${gpu.name || getLbl('msg_hw_unknown', 'Unknown')}</span>
                   </div>
                 </div>
+            `;
+          });
+        }
+
+        html += `
                 <div class="hw-card">
-                  <div class="hw-icon">⚡</div>
+                  <div class="hw-icon"><i class="fa-solid fa-memory"></i></div>
                   ${hardware.totalRamGB ? `<div class="hw-badge">${hardware.totalRamGB} GB</div>` : ''}
                   <div class="hw-details">
                     <span class="hw-label" data-i18n="dash_hw_ram">${getLbl('dash_hw_ram', 'Memory')}</span>
@@ -245,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
           hardware.disks.forEach(disk => {
             html += `
                       <div class="hw-card" style="border-left: 3px solid var(--primary);">
-                        <div class="hw-icon">💾</div>
+                        <div class="hw-icon"><i class="fa-solid fa-hard-drive"></i></div>
                         <div class="hw-badge">${disk.sizeGB} GB</div>
                         <div class="hw-details">
                           <span class="hw-label"><span data-i18n="dash_hw_disk">${getLbl('dash_hw_disk', 'Storage')}</span> (${disk.type === 'HD' ? 'HDD' : disk.type})</span>
@@ -420,12 +433,61 @@ document.addEventListener('DOMContentLoaded', () => {
       if (viewStack.length > 0) {
         const topView = viewStack[viewStack.length - 1];
         closeSub(topView);
+      } else {
+        const svTweaks = document.getElementById('subview-tweaks');
+        const svShutdown = document.getElementById('subview-shutdown');
+        const svDesktop = document.getElementById('subview-desktop-layouts');
+        if (svTweaks && svTweaks.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-tweaks');
+          if (btn) btn.click();
+        } else if (svShutdown && svShutdown.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-shutdown');
+          if (btn) btn.click();
+        } else if (svDesktop && svDesktop.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-desktop-layout');
+          if (btn) btn.click();
+        }
       }
     } else if (e.button === 4) {
       if (forwardStack.length > 0) {
         const nextView = forwardStack.pop();
         viewStack.push(nextView);
         nextView.classList.add('active-sub');
+      } else if (window.mainViewForwardStack && window.mainViewForwardStack.length > 0) {
+        const btn = window.mainViewForwardStack.pop();
+        if (btn) btn.click();
+      }
+    }
+  });
+
+  window.addEventListener('app-command', (e) => {
+    if (e.cmd === 'browser-backward') {
+      if (viewStack.length > 0) {
+        const topView = viewStack[viewStack.length - 1];
+        closeSub(topView);
+      } else {
+        const svTweaks = document.getElementById('subview-tweaks');
+        const svShutdown = document.getElementById('subview-shutdown');
+        const svDesktop = document.getElementById('subview-desktop-layouts');
+        if (svTweaks && svTweaks.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-tweaks');
+          if (btn) btn.click();
+        } else if (svShutdown && svShutdown.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-shutdown');
+          if (btn) btn.click();
+        } else if (svDesktop && svDesktop.classList.contains('active')) {
+          const btn = document.getElementById('btn-back-desktop-layout');
+          if (btn) btn.click();
+        }
+      }
+    } else if (e.cmd === 'browser-forward') {
+      if (forwardStack.length > 0) {
+        const nextView = forwardStack.pop();
+        viewStack.push(nextView);
+        nextView.classList.add('active-sub');
+      } else if (window.mainViewForwardStack && window.mainViewForwardStack.length > 0) {
+        const btn = window.mainViewForwardStack.pop();
+        if (btn) btn.click();
       }
     }
   });
@@ -907,6 +969,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkShutdownState();
   });
   document.getElementById('btn-back-shutdown').addEventListener('click', () => {
+    window.mainViewForwardStack.push(document.getElementById(shutdownCaller === 'tools' ? 'btn-open-shutdown-tools' : 'btn-open-shutdown'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(shutdownCaller).classList.add('active');
   });
@@ -1171,6 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnBackTweaks) {
     btnBackTweaks.addEventListener('click', () => {
+      window.mainViewForwardStack.push(document.getElementById('btn-open-tweaks'));
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('tools').classList.add('active');
     });
@@ -1292,6 +1356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnBackDesktopLayout) {
     btnBackDesktopLayout.addEventListener('click', () => {
+      window.mainViewForwardStack.push(document.getElementById('btn-open-desktop-layout'));
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('tools').classList.add('active');
     });
@@ -1340,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.btn-restore-layout').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const name = e.target.getAttribute('data-name');
-          e.target.innerText = '⏳';
+          e.target.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
           e.target.disabled = true;
           const res = await window.electronAPI.restoreDesktopLayout(name);
           e.target.disabled = false;
@@ -1379,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (!window.electronAPI) return;
-      btnSaveDesktopLayout.innerText = '⏳';
+      btnSaveDesktopLayout.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
       btnSaveDesktopLayout.disabled = true;
       const res = await window.electronAPI.saveDesktopLayout(name);
       btnSaveDesktopLayout.innerText = currentDictionary['dl_save_btn'] || 'Mevcut Düzeni Kaydet';
@@ -1397,12 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const subViewFolderCompressor = document.getElementById('subview-folder-compressor');
   const btnOpenFolderCompressor = document.getElementById('btn-open-folder-compressor');
   const btnBackFolderCompressor = document.getElementById('btn-back-folder-compressor');
-
   const btnFcSelectFolder = document.getElementById('btn-fc-select-folder');
-  const fcSelectedFolderContainer = document.getElementById('fc-selected-folder-container');
-  const fcFolderName = document.getElementById('fc-folder-name');
-  const fcFolderPath = document.getElementById('fc-folder-path');
-  
   const fcStatsName = document.getElementById('fc-stats-name');
   const fcStatsPath = document.getElementById('fc-stats-path');
   const fcUncompressedSize = document.getElementById('fc-uncompressed-size');
@@ -1431,6 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fcSavingsPercent = document.getElementById('fc-savings-percent');
 
   function resetFcUI() {
+    renderFcQueue();
     fcCurrentFolder = null;
     fcStatsName.innerHTML = `<span style="opacity:0.5;">...</span>`;
     fcStatsPath.innerText = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_stats_path_empty']) ? currentDictionary['fc_stats_path_empty'] : 'Lütfen bir klasör seçin';
@@ -1498,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', () => {
       textContainer.appendChild(pathEl);
 
       const removeBtn = document.createElement('div');
-      removeBtn.innerHTML = '✕';
+      removeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
       removeBtn.style.color = 'var(--text-muted)';
       removeBtn.style.fontSize = '14px';
       removeBtn.style.padding = '4px 8px';
@@ -1667,7 +1728,20 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Re-analyze after completion
       if (fcCurrentFolder) {
-        setTimeout(() => selectFolderFromQueue(fcQueue.find(f => f.path === fcCurrentFolder)), 500);
+        setTimeout(async () => {
+          await selectFolderFromQueue(fcQueue.find(f => f.path === fcCurrentFolder));
+          let history = JSON.parse(localStorage.getItem('fcHistory') || '[]');
+          history.push({
+             path: fcCurrentFolder,
+             originalSize: fcUncompressedSize.innerText,
+             compressedSize: fcCompressedSize ? fcCompressedSize.innerText : '-',
+             savings: fcSavingsPercent ? fcSavingsPercent.innerText : '',
+             algorithm: fcCurrentMode,
+             date: new Date().toLocaleString()
+          });
+          localStorage.setItem('fcHistory', JSON.stringify(history));
+          if(typeof renderFcHistory === 'function') renderFcHistory();
+        }, 500);
       }
     } else {
       fcStatusIndicator.style.background = '#ff4757';
@@ -1692,6 +1766,75 @@ document.addEventListener('DOMContentLoaded', () => {
       fcStatusText.innerText = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_status_uncompressing']) ? currentDictionary['fc_status_uncompressing'] : 'Uncompressing...';
       const res = await window.electronAPI.fcUncompressFolder(fcCurrentFolder);
       endFcProgress(res.success, res.message);
+    });
+  }
+
+
+  // --- Folder Compressor History ---
+  const subViewFcHistory = document.getElementById('subview-fc-history');
+  const btnOpenFcHistory = document.getElementById('btn-open-fc-history');
+  const btnBackFcHistory = document.getElementById('btn-back-fc-history');
+  const btnClearFcHistory = document.getElementById('btn-clear-fc-history');
+  const fcHistoryList = document.getElementById('fc-history-list');
+
+  if (btnOpenFcHistory && subViewFcHistory) {
+    btnOpenFcHistory.addEventListener('click', () => {
+      openSub(subViewFcHistory);
+      renderFcHistory();
+    });
+
+    btnBackFcHistory.addEventListener('click', () => {
+      closeSub(subViewFcHistory);
+    });
+
+    btnClearFcHistory.addEventListener('click', () => {
+      localStorage.removeItem('fcHistory');
+      renderFcHistory();
+    });
+  }
+
+  function renderFcHistory() {
+    if (!fcHistoryList) return;
+    const history = JSON.parse(localStorage.getItem('fcHistory') || '[]');
+    fcHistoryList.innerHTML = '';
+    
+    if (history.length === 0) {
+      const emptyText = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_history_empty']) ? currentDictionary['fc_history_empty'] : 'Henüz klasör sıkıştırmadınız. Geçmiş tertemiz!';
+      fcHistoryList.innerHTML = `<div style="text-align:center; color:var(--text-muted); margin-top:40px;"><i class="fa-solid fa-folder-open" style="font-size:48px; margin-bottom:16px; opacity:0.5;"></i><p>${emptyText}</p></div>`;
+      return;
+    }
+    
+    // Reverse to show newest first
+    [...history].reverse().forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'glass-panel';
+      card.style.padding = '20px';
+      card.style.borderRadius = '12px';
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.gap = '12px';
+
+      const tOrig = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_history_original']) ? currentDictionary['fc_history_original'] : 'Gerçek Boyut';
+      const tComp = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_history_compressed']) ? currentDictionary['fc_history_compressed'] : 'Sıkıştırılmış Boyut';
+      const tAlgo = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_history_algorithm']) ? currentDictionary['fc_history_algorithm'] : 'Algoritma';
+      const tDate = (typeof currentDictionary !== 'undefined' && currentDictionary['fc_history_date']) ? currentDictionary['fc_history_date'] : 'Tarih';
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="flex:1; overflow:hidden;">
+            <h3 style="margin:0; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${item.path}">${item.path}</h3>
+            <span style="font-size:12px; color:var(--text-muted);">${tDate}: ${item.date}</span>
+          </div>
+          <div style="background:rgba(0,136,255,0.1); color:var(--primary); padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;">
+            ${tAlgo}: ${item.algorithm}
+          </div>
+        </div>
+        <div style="display:flex; gap:24px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.05); padding-top:12px;">
+          <div><span style="color:var(--text-muted); font-size:12px;">${tOrig}</span><br><b style="font-size:14px;">${item.originalSize}</b></div>
+          <div><span style="color:var(--text-muted); font-size:12px;">${tComp}</span><br><b style="font-size:14px; color:var(--primary);">${item.compressedSize} ${item.savings}</b></div>
+        </div>
+      `;
+      fcHistoryList.appendChild(card);
     });
   }
 
@@ -1857,14 +2000,15 @@ const curatedApps = [
   { id: 'Mozilla.Firefox', name: 'Mozilla Firefox', category: 'cat_browsers' },
   { id: 'Brave.Brave', name: 'Brave', category: 'cat_browsers' },
   { id: 'Opera.Opera', name: 'Opera', category: 'cat_browsers' },
+  { id: 'Apple.Safari', name: 'Safari', category: 'cat_browsers' },
   
   { id: 'Discord.Discord', name: 'Discord', category: 'cat_social' },
-
   { id: 'Zoom.Zoom', name: 'Zoom', category: 'cat_social' },
   { id: 'SlackTechnologies.Slack', name: 'Slack', category: 'cat_social' },
   { id: 'Microsoft.Teams', name: 'Microsoft Teams', category: 'cat_social' },
   { id: 'Telegram.TelegramDesktop', name: 'Telegram', category: 'cat_social' },
   { id: 'WhatsApp.WhatsApp', name: 'WhatsApp', category: 'cat_social' },
+  { id: 'Mozilla.Thunderbird', name: 'Thunderbird', category: 'cat_social' },
 
   { id: 'Valve.Steam', name: 'Steam', category: 'cat_games' },
   { id: 'EpicGames.EpicGamesLauncher', name: 'Epic Games', category: 'cat_games' },
@@ -1874,10 +2018,13 @@ const curatedApps = [
 
   { id: 'Spotify.Spotify', name: 'Spotify', category: 'cat_media' },
   { id: 'VideoLAN.VLC', name: 'VLC Media Player', category: 'cat_media' },
+  { id: 'CodecGuide.K-LiteCodecPack.Standard', name: 'K-Lite Codec Pack', category: 'cat_media' },
   { id: 'OBSProject.OBSStudio', name: 'OBS Studio', category: 'cat_media' },
   { id: 'ShareX.ShareX', name: 'ShareX', category: 'cat_media' },
   { id: 'GIMP.GIMP', name: 'GIMP', category: 'cat_media' },
+  { id: 'dotPDN.PaintDotNet', name: 'Paint.NET', category: 'cat_media' },
   { id: 'Audacity.Audacity', name: 'Audacity', category: 'cat_media' },
+  { id: 'Apple.QuickTime', name: 'QuickTime', category: 'cat_media' },
 
   { id: 'voidtools.Everything', name: 'Everything', category: 'cat_tools' },
   { id: '7zip.7zip', name: '7-Zip', category: 'cat_tools' },
@@ -2023,7 +2170,7 @@ if (window.electronAPI && window.electronAPI.onQuickInstallProgress) {
                uacWarn.style.color = '#ffcc00';
                uacWarn.style.marginTop = '4px';
                uacWarn.style.fontSize = '12px';
-               uacWarn.innerText = '⚠️ Lütfen görev çubuğunda yanıp sönen bir Yönetici İzni (UAC) kalkanı olup olmadığını kontrol edin!';
+               uacWarn.innerText = '<i class="fa-solid fa-triangle-exclamation"></i> Lütfen görev çubuğunda yanıp sönen bir Yönetici İzni (UAC) kalkanı olup olmadığını kontrol edin!';
                outDiv.appendChild(uacWarn);
             }
          }

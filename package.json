@@ -1,7 +1,7 @@
 {
   "name": "u-toolbox",
   "productName": "Ü Toolbox",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An advanced system optimization and performance toolkit for Windows 11.",
   "author": "obteknoloji",
   "private": true,
@@ -63,6 +63,7 @@
     "wait-on": "^9.0.4"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.0",
     "electron-updater": "^6.8.3",
     "koffi": "^3.0.2",
     "systeminformation": "^5.31.5"
