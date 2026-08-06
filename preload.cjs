@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onShredProgress: (callback) => ipcRenderer.on('shred-progress', (e, val) => callback(val)),
 
   scheduleShutdown: (seconds) => ipcRenderer.invoke('schedule-shutdown', seconds),
+  scheduleSmartShutdown: (mbThreshold, durationMin, delayMin) => ipcRenderer.invoke('schedule-smart-shutdown', mbThreshold, durationMin, delayMin),
+  getSmartShutdownStatus: () => ipcRenderer.invoke('get-smart-shutdown-status'),
   cancelShutdown: () => ipcRenderer.invoke('cancel-shutdown'),
   createRestorePoint: () => ipcRenderer.invoke('create-restore-point'),
   applyTweak: (tweakId, enabled) => ipcRenderer.invoke('apply-tweak', tweakId, enabled),

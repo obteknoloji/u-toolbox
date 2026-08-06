@@ -273,7 +273,8 @@ ipcMain.handle('get-pc-usage-history', async () => {
   return new Promise((resolve) => {
     const psCommand = `
             $ErrorActionPreference = 'SilentlyContinue';
-            $events = Get-WinEvent -FilterHashtable @{LogName='System'; Id=6005,6006,1,42} -MaxEvents 500;
+            $startTime = (Get-Date).AddDays(-30);
+            $events = Get-WinEvent -FilterHashtable @{LogName='System'; Id=6005,6006,1,42; StartTime=$startTime};
             if ($null -ne $events) {
                 $events | Select-Object Id, @{n='Time';e={$_.TimeCreated.ToString('o')}} | ConvertTo-Json -Compress
             } else {
@@ -650,9 +651,67 @@ ipcMain.handle('schedule-shutdown', async (event, seconds) => {
   }
 });
 
+let smartShutdownInterval = null;
+
+ipcMain.handle('schedule-smart-shutdown', async (event, mbThreshold, durationMin, delayMin) => {
+  try {
+    if (smartShutdownInterval) clearInterval(smartShutdownInterval);
+    await execPromise('shutdown /a').catch(() => {});
+    
+    let lowSpeedCounter = 0;
+    let highSpeedCounter = 0;
+    const requiredSeconds = durationMin * 60;
+    const thresholdBytes = mbThreshold * 1024 * 1024;
+    
+    smartShutdownInterval = setInterval(async () => {
+      try {
+        const netStats = await si.networkStats();
+        const totalRxSec = netStats.reduce((sum, intf) => sum + Math.max(0, intf.rx_sec || 0), 0);
+        
+        if (totalRxSec < thresholdBytes) {
+          lowSpeedCounter++;
+          highSpeedCounter = 0;
+        } else {
+          highSpeedCounter++;
+          if (highSpeedCounter >= 10) {
+            lowSpeedCounter = 0;
+          }
+        }
+        
+        if (lowSpeedCounter >= requiredSeconds) {
+          clearInterval(smartShutdownInterval);
+          smartShutdownInterval = null;
+          await execPromise(`shutdown /s /t ${delayMin * 60}`);
+        }
+      } catch (e) {
+        console.error('Smart shutdown network check error:', e);
+      }
+    }, 1000);
+    
+    return { success: true };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+});
+
+ipcMain.handle('get-smart-shutdown-status', () => {
+  return !!smartShutdownInterval;
+});
+
 ipcMain.handle('cancel-shutdown', async (event) => {
   try {
-    await execPromise('shutdown /a');
+    let wasSmart = false;
+    if (smartShutdownInterval) {
+      clearInterval(smartShutdownInterval);
+      smartShutdownInterval = null;
+      wasSmart = true;
+    }
+    await execPromise('shutdown /a').catch((err) => {
+      if (wasSmart || (err.message && err.message.includes('1116'))) {
+        return;
+      }
+      throw err;
+    });
     return { success: true };
   } catch (err) {
     return { success: false, message: err.message || 'Kapatma iptal edilemedi.' };
@@ -756,6 +815,8 @@ const TWEAKS_MAP = {
     extraOff: 'reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced /v HideFileExt /t REG_DWORD /d 1 /f'
   }
 };
+
+
 
 ipcMain.handle('get-all-tweak-statuses', async (event, tweakIds) => {
   try {

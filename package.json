@@ -1,7 +1,7 @@
 {
   "name": "u-toolbox",
   "productName": "Ü Toolbox",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "An advanced system optimization and performance toolkit for Windows 11.",
   "author": "obteknoloji",
   "private": true,
@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "electron:start": "cross-env ELECTRON_RUN_AS_NODE= NODE_ENV=development electron .",
     "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"wait-on tcp:5133 && npm run electron:start\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "release": "npm run build && electron-builder --win --publish always"
   },
   "build": {
     "appId": "com.windows.u-toolbox",

@@ -3,11 +3,11 @@
   Ü Toolbox
 </h1>
 <p align="center">
-    <img src="https://img.shields.io/badge/platform-Windows_11-0078d7" alt="Platform">
   <a href="https://github.com/obteknoloji/u-toolbox/releases/latest">
     <img src="https://img.shields.io/github/v/release/obteknoloji/u-toolbox?label=version&color=blue" alt="Latest Release">
   </a>
   <img src="https://img.shields.io/badge/license-GPLv3-blue" alt="License">
+  <img src="https://img.shields.io/badge/platform-Windows_11-0078d7" alt="Platform">
 </p>
 <br>
 
@@ -16,6 +16,7 @@
 <img src="https://raw.githubusercontent.com/obteknoloji/u-toolbox/refs/heads/main/preview.png">
 
 ## Öne Çıkan Özellikler
+- **Sistem İzleme & Özeti:** CPU, RAM, Ekran Kartı, Depolama ve İnternet kullanımınızı anlık olarak modern bir panodan takip edin.
 - **Derinlemesine Temizlik:** Temp, Prefetch, Windows Update artıkları, Minidump ve önbellek dosyalarını güvenle temizleyerek disk alanı açın. Temizlik geçmişinizi saklayın.
 - **RAM Optimizasyonu:** Arka planda bekleyen ve askıda kalan uygulamaların bellekteki (Working Set) yerini zorla boşaltarak sistemi rahatlatın.
 - **Gelişmiş Windows Özelleştirici:** Ağ darboğazını (Network Throttling) kaldırma, Nagle algoritmasını kapatıp ping düşürme, işlemci mikro uykularını iptal etme (Ultimate Performance) vb. gizli Windows 11 ayarlarına tek tıkla erişin.

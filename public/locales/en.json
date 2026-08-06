@@ -295,5 +295,16 @@
   "fc_history_original": "Original Size",
   "fc_history_compressed": "Compressed",
   "fc_history_algorithm": "Algorithm",
-  "fc_history_date": "Date"
+  "fc_history_date": "Date",
+  "shut_t3": "Smart Shutdown",
+  "shut_smart_mb": "Speed Limit (MB/s)",
+  "shut_smart_dur": "Duration (min)",
+  "shut_smart_delay": "Delay (min)",
+  "shut_smart_active_title": "Smart Download Watchdog Active",
+  "shut_smart_active_desc": "Your PC will automatically shut down when the download speed falls below the specified limit.",
+  "shut_smart_txt1": "When download speed drops below",
+  "shut_smart_txt2": "MB/s continuously for",
+  "shut_smart_txt3": "minutes, shut down PC in",
+  "shut_smart_txt4": "minutes.",
+  "shut_smart_warn": "For Smart Shutdown to work, <b>Ü Toolbox</b> must remain open or running in the system tray."
 }

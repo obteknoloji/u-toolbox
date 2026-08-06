@@ -3,7 +3,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 window.mainViewForwardStack = [];
 let currentDictionary = {};
-let currentLang = localStorage.getItem('appLang') || 'tr';
+let currentLang = localStorage.getItem('appLang') || (navigator.language.startsWith('tr') ? 'tr' : 'en');
 
 async function applyLang(lang) {
   try {
@@ -92,26 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function updateTranslations() {
-    const i18nElements = document.querySelectorAll('[data-i18n]');
-    i18nElements.forEach(el => {
-      const key = el.getAttribute('data-i18n');
-      if (currentDictionary[key]) {
-        // Handle input placeholders specifically
-        if (el.tagName === 'INPUT' && el.placeholder !== undefined) {
-           el.placeholder = currentDictionary[key];
-        } else {
-           // For circular gauge values or dynamic spans, check if it's content-editable
-           el.innerHTML = currentDictionary[key];
-        }
-      }
-    });
 
-    // Mirror to Main process for menus
-    if (window.electronAPI) {
-      window.electronAPI.updateTrayLabels(currentDictionary);
-    }
-  }
 
   // Helper for translating with placeholders (like {0})
   function getT(key, ...args) {
@@ -976,22 +957,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabRel = document.getElementById('tab-shut-relative');
   const tabAbs = document.getElementById('tab-shut-absolute');
+  const tabSmart = document.getElementById('tab-shut-smart');
   const paneRel = document.getElementById('pane-shut-relative');
   const paneAbs = document.getElementById('pane-shut-absolute');
+  const paneSmart = document.getElementById('pane-shut-smart');
 
   tabRel.addEventListener('click', () => {
     tabRel.classList.add('active'); tabRel.style.borderBottomColor = 'var(--primary)'; tabRel.style.color = 'var(--primary)';
     tabAbs.classList.remove('active'); tabAbs.style.borderBottomColor = 'transparent'; tabAbs.style.color = 'var(--text-muted)';
-    paneRel.classList.remove('hidden'); paneAbs.classList.add('hidden');
+    tabSmart.classList.remove('active'); tabSmart.style.borderBottomColor = 'transparent'; tabSmart.style.color = 'var(--text-muted)';
+    paneRel.classList.remove('hidden'); paneAbs.classList.add('hidden'); paneSmart.classList.add('hidden');
   });
 
   tabAbs.addEventListener('click', () => {
     tabAbs.classList.add('active'); tabAbs.style.borderBottomColor = 'var(--primary)'; tabAbs.style.color = 'var(--primary)';
     tabRel.classList.remove('active'); tabRel.style.borderBottomColor = 'transparent'; tabRel.style.color = 'var(--text-muted)';
-    paneAbs.classList.remove('hidden'); paneRel.classList.add('hidden');
+    tabSmart.classList.remove('active'); tabSmart.style.borderBottomColor = 'transparent'; tabSmart.style.color = 'var(--text-muted)';
+    paneAbs.classList.remove('hidden'); paneRel.classList.add('hidden'); paneSmart.classList.add('hidden');
   });
 
-  function checkShutdownState() {
+  tabSmart.addEventListener('click', () => {
+    tabSmart.classList.add('active'); tabSmart.style.borderBottomColor = 'var(--primary)'; tabSmart.style.color = 'var(--primary)';
+    tabRel.classList.remove('active'); tabRel.style.borderBottomColor = 'transparent'; tabRel.style.color = 'var(--text-muted)';
+    tabAbs.classList.remove('active'); tabAbs.style.borderBottomColor = 'transparent'; tabAbs.style.color = 'var(--text-muted)';
+    paneSmart.classList.remove('hidden'); paneRel.classList.add('hidden'); paneAbs.classList.add('hidden');
+  });
+
+  async function checkShutdownState() {
     const activeState = localStorage.getItem('shutdownActive');
     const setupView = document.getElementById('shutdown-setup-view');
     const activeView = document.getElementById('shutdown-active-view');
@@ -999,6 +991,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.shutdownInterval) {
       clearInterval(window.shutdownInterval);
       window.shutdownInterval = null;
+    }
+
+    if (activeState === 'smart') {
+      if (window.electronAPI && window.electronAPI.getSmartShutdownStatus) {
+        const isActive = await window.electronAPI.getSmartShutdownStatus();
+        if (!isActive) {
+           localStorage.removeItem('shutdownActive');
+           setupView.classList.remove('hidden');
+           activeView.classList.add('hidden');
+           return;
+        }
+      }
+      setupView.classList.add('hidden');
+      activeView.classList.remove('hidden');
+      activeView.querySelector('#shut-active-text').innerHTML = `
+          <div style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6;">
+            ${currentDictionary.shut_smart_active_desc || 'İndirme hızınız belirlenen şartların altına düştüğünde bilgisayarınız otomatik olarak kapatılacaktır.'}
+          </div>
+          <div style="background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.2); padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 600; color: #2ed573; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.1);">
+            <i class="fa-solid fa-bolt" style="animation: pulseOpacity 2s infinite;"></i>
+            ${currentDictionary.shut_smart_active_title || 'Akıllı İndirme Bekçisi Çalışıyor'}
+          </div>
+        `;
+      return;
     }
 
     if (activeState && parseInt(activeState) > Date.now()) {
@@ -1045,11 +1061,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         activeView.querySelector('#shut-active-text').innerHTML = `
-          <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 600; color: #fff; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"></path><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
-            ${dayText} ${timeStr}
+          <div style="color: var(--text-muted); font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+            <i class="fa-regular fa-calendar" style="opacity: 0.7;"></i> ${dayText} ${timeStr}
           </div>
-          <div style="font-size:38px; font-weight:800; color:#fff; text-shadow: 0 0 20px rgba(0, 210, 255, 0.5); margin-top:24px; font-variant-numeric: tabular-nums; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
+          <div style="font-size: 40px; white-space: nowrap; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px; background: linear-gradient(180deg, #ffffff 0%, #a0a5b1 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4)); line-height: 1;">
             ${countdownStr}
           </div>
         `;
@@ -1065,6 +1080,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('btn-set-shutdown').addEventListener('click', async () => {
+    if (!paneSmart.classList.contains('hidden')) {
+      const mbThreshold = parseFloat(document.getElementById('shut-smart-mb').value) || 0;
+      const durationMin = parseInt(document.getElementById('shut-smart-dur').value) || 0;
+      const delayMin = parseInt(document.getElementById('shut-smart-delay').value) || 0;
+      
+      if (mbThreshold < 0 || durationMin <= 0) return showToast('Lütfen geçerli değerler girin.', 'error');
+      
+      if (window.electronAPI) {
+        const res = await window.electronAPI.scheduleSmartShutdown(mbThreshold, durationMin, delayMin);
+        if (res.success) {
+          localStorage.setItem('shutdownActive', 'smart');
+          checkShutdownState();
+          showToast('Akıllı kapatma başarıyla başlatıldı!', 'success');
+        } else {
+          showToast('Başlatma başarısız: ' + res.message, 'error');
+        }
+      }
+      return;
+    }
+
     let seconds = 0;
     if (!paneRel.classList.contains('hidden')) {
       const hrs = parseInt(document.getElementById('shut-hrs').value) || 0;
@@ -1117,15 +1152,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCreateRestore) {
     btnCreateRestore.addEventListener('click', async () => {
       if (window.electronAPI) {
-        const originalText = btnCreateRestore.innerText;
-        btnCreateRestore.innerText = currentDictionary.msg_creating_restore || '...';
+        const originalText = btnCreateRestore.innerHTML;
+        btnCreateRestore.innerHTML = currentDictionary.msg_creating_restore || '...';
         btnCreateRestore.disabled = true;
 
         showToast('msg_uac_info', 'info');
         const res = await window.electronAPI.createRestorePoint();
 
         showToast(res.message, res.success ? 'success' : 'error');
-        btnCreateRestore.innerText = originalText;
+        btnCreateRestore.innerHTML = originalText;
         btnCreateRestore.disabled = false;
       } else {
         showToast('msg_api_not_found', 'error');
@@ -2000,7 +2035,7 @@ const curatedApps = [
   { id: 'Mozilla.Firefox', name: 'Mozilla Firefox', category: 'cat_browsers' },
   { id: 'Brave.Brave', name: 'Brave', category: 'cat_browsers' },
   { id: 'Opera.Opera', name: 'Opera', category: 'cat_browsers' },
-  { id: 'Apple.Safari', name: 'Safari', category: 'cat_browsers' },
+  { id: 'VivaldiTechnologies.Vivaldi', name: 'Vivaldi', category: 'cat_browsers' },
   
   { id: 'Discord.Discord', name: 'Discord', category: 'cat_social' },
   { id: 'Zoom.Zoom', name: 'Zoom', category: 'cat_social' },
@@ -2015,6 +2050,7 @@ const curatedApps = [
   { id: 'GOG.Galaxy', name: 'GOG Galaxy', category: 'cat_games' },
   { id: 'ElectronicArts.EADesktop', name: 'EA app', category: 'cat_games' },
   { id: 'Ubisoft.Connect', name: 'Ubisoft Connect', category: 'cat_games' },
+  { id: 'Blizzard.BattleNet', name: 'Battle.net', category: 'cat_games' },
 
   { id: 'Spotify.Spotify', name: 'Spotify', category: 'cat_media' },
   { id: 'VideoLAN.VLC', name: 'VLC Media Player', category: 'cat_media' },
@@ -2024,7 +2060,8 @@ const curatedApps = [
   { id: 'GIMP.GIMP', name: 'GIMP', category: 'cat_media' },
   { id: 'dotPDN.PaintDotNet', name: 'Paint.NET', category: 'cat_media' },
   { id: 'Audacity.Audacity', name: 'Audacity', category: 'cat_media' },
-  { id: 'Apple.QuickTime', name: 'QuickTime', category: 'cat_media' },
+  { id: 'Figma.Figma', name: 'Figma', category: 'cat_media' },
+  { id: 'BlenderFoundation.Blender', name: 'Blender', category: 'cat_media' },
 
   { id: 'voidtools.Everything', name: 'Everything', category: 'cat_tools' },
   { id: '7zip.7zip', name: '7-Zip', category: 'cat_tools' },
@@ -2287,3 +2324,26 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+
+
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  ['shut-hrs', 'shut-mins', 'shut-smart-mb', 'shut-smart-dur', 'shut-smart-delay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        if (el.value === '') return;
+        const val = parseFloat(el.value);
+        if (el.hasAttribute('max')) {
+          const max = parseFloat(el.getAttribute('max'));
+          if (val > max) el.value = max;
+        }
+        if (el.hasAttribute('min')) {
+          const min = parseFloat(el.getAttribute('min'));
+          if (val < min) el.value = min;
+        }
+      });
+    }
+  });
+});

@@ -295,5 +295,16 @@
   "fc_history_original": "Gerçek Boyut",
   "fc_history_compressed": "Sıkıştırılmış",
   "fc_history_algorithm": "Algoritma",
-  "fc_history_date": "Tarih"
+  "fc_history_date": "Tarih",
+  "shut_t3": "Akıllı Kapatma",
+  "shut_smart_mb": "Hız Sınırı (MB/s)",
+  "shut_smart_dur": "Süre Şartı (dk)",
+  "shut_smart_delay": "Kapanma (dk)",
+  "shut_smart_active_title": "Akıllı İndirme Bekçisi Çalışıyor",
+  "shut_smart_active_desc": "İndirme hızınız belirlenen şartların altına düştüğünde bilgisayarınız otomatik olarak kapatılacaktır.",
+  "shut_smart_txt1": "İndirme hızı",
+  "shut_smart_txt2": "MB/s altına düştüğünde ve bu durum kesintisiz",
+  "shut_smart_txt3": "dakika sürdüğünde, bilgisayarı",
+  "shut_smart_txt4": "dakika sonra kapat.",
+  "shut_smart_warn": "Akıllı kapatmanın çalışabilmesi için <b>Ü Toolbox</b>'ın açık veya sistem tepsisinde çalışır durumda olması gerekmektedir."
 }
